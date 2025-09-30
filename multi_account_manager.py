@@ -195,6 +195,9 @@ class MultiAccountManager:
         # Add traded symbols to Market Watch after all connections are established
         self.add_traded_symbols_to_market_watch()
         
+        # Add traded symbols to Market Watch after all connections are established
+        self.add_traded_symbols_to_market_watch()
+        
         return success_count > 0
     
     def disconnect_all_accounts(self):
