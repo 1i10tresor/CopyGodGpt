@@ -100,13 +100,13 @@ class MultiAccountManager:
                     # Add to Market Watch
                     import MetaTrader5 as mt5
                     if not mt5.symbol_select(broker_symbol, True):
-                        logger.debug(f"Account {login}: Could not add symbol {broker_symbol} to Market Watch")
+                        logger.warning(f"Account {login}: Could not add symbol {broker_symbol} (from {symbol}) to Market Watch")
                         failed_symbols += 1
                     else:
                         logger.debug(f"Account {login}: Added {symbol} -> {broker_symbol} to Market Watch")
                         
                 except Exception as e:
-                    logger.error(f"Account {login}: Error adding symbol {symbol}: {e}")
+                    logger.error(f"Account {login}: Error adding symbol {symbol} -> {broker_symbol if 'broker_symbol' in locals() else 'unknown'}: {e}")
                     failed_symbols += 1
             
             if failed_symbols > 0:
