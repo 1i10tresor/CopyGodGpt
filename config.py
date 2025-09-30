@@ -169,12 +169,11 @@ LOG_ENCODING = "utf-8"  # UTF-8 encoding for proper emoji support
 
 # Traded Symbols (for Fortune parser and future multi-symbol support)
 TRADED_SYMBOLS = [
-    "XAUUSD", "GOLD",
-    "XAGUSD", "SILVER", 
+    "XAUUSD",
+    "XAGUSD",
     "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD",
     "EURGBP", "EURJPY", "GBPJPY", "GBPCAD", "EURCAD",
-    "BTCUSD", "ETHUSD",
+    "BTCUSD",
     "US30", "US100", "US500",
-    "USOIL", "UKOIL",
-    "GER40", "UK100"
+    "CL-OIL",
 ]
