@@ -4,6 +4,7 @@
 import logging
 import MetaTrader5 as mt5
 from typing import Tuple, Optional
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class MT5Manager:
         self.broker_name = broker_name
         self.mt5_path = mt5_path
         self.connected = False
+        self.calculated_time_offset_minutes = 0
     
     def connect(self) -> bool:
         """Connect to MetaTrader 5"""
@@ -57,6 +59,25 @@ class MT5Manager:
         except Exception as e:
             logger.error(f"MT5 connection error: {e}")
             return False
+    
+    def get_server_time_utc(self) -> Optional[datetime]:
+        """Get MT5 server time in UTC"""
+        try:
+            terminal_info = mt5.terminal_info()
+            if terminal_info is None:
+                logger.error("Failed to get terminal info")
+                return None
+            
+            # Get server time from terminal info (this is in UTC)
+            server_time_timestamp = terminal_info.time
+            server_time_utc = datetime.utcfromtimestamp(server_time_timestamp)
+            
+            logger.debug(f"MT5 server time (UTC): {server_time_utc}")
+            return server_time_utc
+            
+        except Exception as e:
+            logger.error(f"Error getting MT5 server time: {e}")
+            return None
     
     def disconnect(self):
         """Disconnect from MetaTrader 5"""
