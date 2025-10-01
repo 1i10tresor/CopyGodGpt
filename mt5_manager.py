@@ -5,6 +5,8 @@ import logging
 import MetaTrader5 as mt5
 from typing import Tuple, Optional
 from datetime import datetime
+from symbol_mapper import get_broker_symbol
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +65,23 @@ class MT5Manager:
     def get_server_time_utc(self) -> Optional[datetime]:
         """Get MT5 server time in UTC"""
         try:
-            terminal_info = mt5.terminal_info()
-            if terminal_info is None:
-                logger.error("Failed to get terminal info")
+            # Get broker-specific XAUUSD symbol
+            broker_symbol = get_broker_symbol("XAUUSD", self.broker_name, config.SYMBOL_MAPPING)
+            logger.debug(f"Using symbol {broker_symbol} to get server time")
+            
+            # Ensure symbol is in Market Watch
+            if not mt5.symbol_select(broker_symbol, True):
+                logger.warning(f"Could not add {broker_symbol} to Market Watch for time sync")
                 return None
             
-            # Get server time from terminal info (this is in UTC)
-            server_time_timestamp = terminal_info.time
+            # Get tick data which contains server timestamp
+            tick = mt5.symbol_info_tick(broker_symbol)
+            if tick is None:
+                logger.error(f"Failed to get tick data for {broker_symbol}")
+                return None
+            
+            # Get server time from tick timestamp (this is in UTC)
+            server_time_timestamp = tick.time
             server_time_utc = datetime.utcfromtimestamp(server_time_timestamp)
             
             logger.debug(f"MT5 server time (UTC): {server_time_utc}")
