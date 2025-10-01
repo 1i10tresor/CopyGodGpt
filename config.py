@@ -94,6 +94,9 @@ EXPIRATION_TIMES = {
     "FORTUNE": 720,  # 12 hours (720 minutes) for Fortune
 }
 
+# MT5 Time Offset Configuration
+MT5_TIME_OFFSET_MINUTES = 60  # Terminal MT5 is 60 minutes ahead of system time
+
 # Logging Configuration
 LOG_LEVEL = "INFO"  # DEBUG, INFO, WARNING, ERROR
 LOG_FILE = "trading_copier.log"
