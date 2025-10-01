@@ -47,10 +47,10 @@ Round prices to symbol precision
                 
                 # Add expiration for pending orders only
                 if signal.expiration_minutes:
-                    expiration_time = datetime.now() + timedelta(minutes=signal.expiration_minutes)
+                    expiration_time = datetime.now() + timedelta(minutes=signal.expiration_minutes, seconds=10)
                     request["expiration"] = int(expiration_time.timestamp())
                     request["type_time"] = mt5.ORDER_TIME_SPECIFIED
-                    logger.debug(f"Setting expiration for pending order: {expiration_time}")
+                    logger.debug(f"Setting expiration for pending order: {expiration_time} (with 10s buffer)")
                 else:
                     request["type_time"] = mt5.ORDER_TIME_GTC
             else:
