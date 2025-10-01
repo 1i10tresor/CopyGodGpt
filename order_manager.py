@@ -148,21 +148,40 @@ class OrderManager:
                 
                 # Add expiration for pending orders only
                 if signal.expiration_minutes:
-                    # Calculate total expiration time including MT5 time offset
-                    base_expiration_minutes = signal.expiration_minutes
-                    total_expiration_minutes = base_expiration_minutes + self.mt5.calculated_time_offset_minutes
-                    expiration_time = datetime.utcnow() + timedelta(minutes=total_expiration_minutes, seconds=10)
+                    # Get current server time and add expiration duration
+                    server_time = self.mt5.get_server_time_utc()
+                    if server_time is None:
+                        logger.error("Could not get MT5 server time for expiration calculation")
+                        # Fallback: use system time with offset
+                        base_expiration_minutes = signal.expiration_minutes
+                        total_expiration_minutes = base_expiration_minutes + self.mt5.calculated_time_offset_minutes
+                        expiration_time = datetime.utcnow() + timedelta(minutes=total_expiration_minutes, seconds=10)
+                        logger.warning(f"Using fallback expiration calculation: {expiration_time} UTC")
+                    else:
+                        # Calculate expiration based on server time
+                        expiration_time = server_time + timedelta(minutes=signal.expiration_minutes, seconds=10)
+                        logger.info(f"Expiration calculated from server time: Server={server_time}, Expiration={expiration_time} UTC ({signal.expiration_minutes}min + 10s buffer)")
+                    
                     request["expiration"] = int(expiration_time.timestamp())
                     request["type_time"] = mt5.ORDER_TIME_SPECIFIED
-                    logger.info(f"Setting expiration for pending order: {expiration_time} UTC (base: {base_expiration_minutes}min + calculated offset: {self.mt5.calculated_time_offset_minutes}min = total: {total_expiration_minutes}min with 10s buffer)")
                 else:
                     # Fallback to default expiration time if not specified
-                    base_expiration_minutes = config.EXPIRATION_TIMES["DEFAULT"]
-                    total_expiration_minutes = base_expiration_minutes + self.mt5.calculated_time_offset_minutes
-                    expiration_time = datetime.utcnow() + timedelta(minutes=total_expiration_minutes, seconds=10)
+                    server_time = self.mt5.get_server_time_utc()
+                    if server_time is None:
+                        logger.error("Could not get MT5 server time for default expiration calculation")
+                        # Fallback: use system time with offset
+                        base_expiration_minutes = config.EXPIRATION_TIMES["DEFAULT"]
+                        total_expiration_minutes = base_expiration_minutes + self.mt5.calculated_time_offset_minutes
+                        expiration_time = datetime.utcnow() + timedelta(minutes=total_expiration_minutes, seconds=10)
+                        logger.warning(f"Using fallback default expiration calculation: {expiration_time} UTC")
+                    else:
+                        # Calculate expiration based on server time
+                        default_minutes = config.EXPIRATION_TIMES["DEFAULT"]
+                        expiration_time = server_time + timedelta(minutes=default_minutes, seconds=10)
+                        logger.info(f"Default expiration calculated from server time: Server={server_time}, Expiration={expiration_time} UTC ({default_minutes}min + 10s buffer)")
+                    
                     request["expiration"] = int(expiration_time.timestamp())
                     request["type_time"] = mt5.ORDER_TIME_SPECIFIED
-                    logger.info(f"Setting expiration for pending order (default): {expiration_time} UTC (base: {base_expiration_minutes}min + calculated offset: {self.mt5.calculated_time_offset_minutes}min = total: {total_expiration_minutes}min with 10s buffer)")
             else:
                 # Market orders don't need expiration
                 request["type_time"] = mt5.ORDER_TIME_GTC
