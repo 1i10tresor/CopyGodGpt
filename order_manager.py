@@ -40,7 +40,8 @@ class OrderManager:
         
         # Ensure symbol is in Market Watch before getting price
         if not mt5.symbol_select(broker_symbol, True):
-            logger.error(f"Could not add symbol {broker_symbol} to Market Watch")
+            error = mt5.last_error()
+            logger.error(f"Could not add symbol {broker_symbol} to Market Watch - MT5 Error: {error}")
             return None, None
         
         current_price = self.mt5.get_market_price(broker_symbol, signal.direction)
@@ -92,7 +93,8 @@ class OrderManager:
         
         # Ensure symbol is in Market Watch (this also makes it visible)
         if not mt5.symbol_select(broker_symbol, True):
-            logger.error(f"Could not add symbol {broker_symbol} to Market Watch")
+            error = mt5.last_error()
+            logger.error(f"Could not add symbol {broker_symbol} to Market Watch - MT5 Error: {error}")
             return []
         
         # Get symbol info for broker-specific symbol

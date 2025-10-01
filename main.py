@@ -155,7 +155,8 @@ class TradingCopier:
                 
                 # Add to Market Watch
                 if not mt5.symbol_select(broker_symbol, True):
-                    logger.warning(f"Could not add symbol {broker_symbol} (from {symbol}) to Market Watch")
+                    error = mt5.last_error()
+                    logger.warning(f"Could not add symbol {broker_symbol} (from {symbol}) to Market Watch - MT5 Error: {error}")
                     failed_symbols += 1
                 else:
                     logger.debug(f"Added {symbol} -> {broker_symbol} to Market Watch")

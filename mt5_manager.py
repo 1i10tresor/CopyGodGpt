@@ -83,7 +83,8 @@ class MT5Manager:
             logger.debug(f"Selecting symbol {symbol} for market watch")
             # Ensure symbol is in Market Watch
             if not mt5.symbol_select(symbol, True):
-                logger.error(f"Could not add symbol {symbol} to Market Watch")
+                error = mt5.last_error()
+                logger.error(f"Could not add symbol {symbol} to Market Watch - MT5 Error: {error}")
                 return None
             
             tick = mt5.symbol_info_tick(symbol)
