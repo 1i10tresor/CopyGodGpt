@@ -189,15 +189,11 @@ class OrderManager:
         
         return placed_tickets
     
-    def monitor_break_even(self) -> List[Dict[str, Any]]:
+    def monitor_and_apply_break_even(self):
         """
-        Monitor positions for break-even modification (master account only)
-        
-        Returns:
-            List of break-even modifications needed: [{"ticket": int, "new_sl": float, "current_tp": float, "message_id": int, "original_symbol": str}]
+        Monitor positions for break-even modification and apply them directly
         """
         logger.debug("Starting break-even monitoring check...")
-        modifications_needed = []
         
         try:
             # Get all positions with our magic number
@@ -205,7 +201,7 @@ class OrderManager:
             
             if positions is None:
                 logger.debug("No positions found (positions_get returned None)")
-                return modifications_needed
+                return
             
             logger.debug(f"Found {len(positions)} positions with magic number {config.MAGIC_NUMBER}")
             
@@ -263,13 +259,17 @@ class OrderManager:
                             new_sl = entry_price + config.BE_OFFSET
                             logger.info(f"Position {position.ticket}: BREAK-EVEN NEEDED - New SL will be {new_sl:.2f} (entry: {entry_price:.2f}, offset: {config.BE_OFFSET})")
                             
-                            modifications_needed.append({
-                                "ticket": position.ticket,
-                                "new_sl": new_sl,
-                                "current_tp": position.tp,
-                                "message_id": message_id,
-                                "position_symbol": position.symbol
-                            })
+                            # Apply break-even modification directly
+                            success = self.mt5.modify_sl_for_position(
+                                ticket=position.ticket,
+                                new_sl=new_sl,
+                                current_tp=position.tp
+                            )
+                            
+                            if success:
+                                logger.info(f"✅ Break-even applied to position {position.ticket}")
+                            else:
+                                logger.error(f"❌ Failed to apply break-even to position {position.ticket}")
                         elif tp1_reached:
                             logger.info(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f})")
                         else:
@@ -285,5 +285,3 @@ class OrderManager:
         except Exception as e:
             logger.error(f"Break-even monitor error: {e}", exc_info=True)
         
-        logger.debug(f"Break-even monitoring completed. Found {len(modifications_needed)} modifications needed")
-        return modifications_needed

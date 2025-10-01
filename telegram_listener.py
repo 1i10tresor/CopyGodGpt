@@ -5,7 +5,7 @@ import logging
 from telethon import TelegramClient, events
 from telethon.tl.types import User, Channel, Chat
 from parser import SignalParser
-from multi_account_manager import MultiAccountManager
+from order_manager import OrderManager
 import config
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,10 @@ logger = logging.getLogger(__name__)
 class TelegramListener:
     """Manages Telegram connection and message listening"""
     
-    def __init__(self, multi_account_manager: MultiAccountManager):
+    def __init__(self, order_manager: OrderManager, account_config: dict):
         self.client = TelegramClient('trading_copier', config.API_ID, config.API_HASH)
-        self.multi_account_manager = multi_account_manager
+        self.order_manager = order_manager
+        self.account_config = account_config
         self.parser = SignalParser()
     
     async def start(self):
@@ -96,13 +97,13 @@ class TelegramListener:
                 if signal:
                     logger.info(f"📊 Valid signal detected: {signal}")
                     
-                    # Place orders on all accounts
-                    result = self.multi_account_manager.place_signal_on_all_accounts(signal)
+                    # Place orders on the account
+                    placed_tickets = self.order_manager.place_orders(signal, self.account_config)
                     
-                    if result['successful_accounts'] > 0:
-                        logger.info(f"✅ Successfully placed orders on {result['successful_accounts']}/{result['total_accounts']} accounts for signal #{signal.message_id}")
+                    if len(placed_tickets) > 0:
+                        logger.info(f"✅ Successfully placed {len(placed_tickets)} orders for signal #{signal.message_id}")
                     else:
-                        logger.warning(f"⚠️ No orders placed on any account for signal #{signal.message_id}")
+                        logger.warning(f"⚠️ No orders placed for signal #{signal.message_id}")
                 else:
                     logger.debug(f"Not a valid trading signal from {author}")
                 

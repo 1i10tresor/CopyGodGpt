@@ -8,9 +8,12 @@ import asyncio
 import logging
 import sys
 import io
-from multi_account_manager import MultiAccountManager
+from mt5_manager import MT5Manager
+from order_manager import OrderManager
 from telegram_listener import TelegramListener
+from symbol_mapper import get_broker_symbol
 import config
+import MetaTrader5 as mt5
 
 # Fix encoding for Windows console
 if sys.platform == 'win32':
@@ -37,8 +40,15 @@ class TradingCopier:
     """Main application orchestrator"""
     
     def __init__(self):
-        self.multi_account_manager = MultiAccountManager(config.ACCOUNTS)
-        self.telegram_listener = TelegramListener(self.multi_account_manager)
+        self.mt5_manager = MT5Manager(
+            login=config.ACCOUNT['login'],
+            password=config.ACCOUNT['password'],
+            server=config.ACCOUNT['server'],
+            broker_name=config.ACCOUNT['broker_name'],
+            mt5_path=config.ACCOUNT.get('mt5_path')
+        )
+        self.order_manager = OrderManager(self.mt5_manager)
+        self.telegram_listener = TelegramListener(self.order_manager, config.ACCOUNT)
         self.tasks = []
     
     async def start(self):
@@ -47,17 +57,20 @@ class TradingCopier:
         logger.info("Starting Trading Signal Copier")
         logger.info("=" * 50)
         
-        # Connect to all MT5 accounts
-        logger.info("Connecting to MetaTrader 5 accounts...")
-        if not self.multi_account_manager.connect_all_accounts():
-            logger.error("Failed to connect to any MT5 accounts. Exiting.")
+        # Connect to MT5 account
+        logger.info(f"Connecting to MetaTrader 5 account {config.ACCOUNT['login']}...")
+        if not self.mt5_manager.connect():
+            logger.error("Failed to connect to MT5 account. Exiting.")
             logger.error("Please check:")
-            logger.error("1. MT5 terminals are installed and running")
-            logger.error("2. Login credentials in ACCOUNTS config are correct")
+            logger.error("1. MT5 terminal is installed and running")
+            logger.error("2. Login credentials in ACCOUNT config are correct")
             logger.error("3. Server name is correct")
             logger.error("4. Algorithm trading is enabled in MT5")
             return False
-        logger.info("✅ MT5 accounts connected successfully")
+        logger.info("✅ MT5 account connected successfully")
+        
+        # Add traded symbols to Market Watch
+        self.add_traded_symbols_to_market_watch()
         
         # Start Telegram client
         logger.info("Connecting to Telegram...")
@@ -67,7 +80,7 @@ class TradingCopier:
             logger.error("1. API_ID and API_HASH in config.py")
             logger.error("2. Phone number is correct")
             logger.error("3. Internet connection is stable")
-            self.multi_account_manager.disconnect_all_accounts()
+            self.mt5_manager.disconnect()
             return False
         logger.info("✅ Telegram connected successfully")
         
@@ -85,7 +98,7 @@ class TradingCopier:
             
             # Break-even monitoring task
             be_task = asyncio.create_task(
-                self.multi_account_manager.monitor_and_propagate_break_even(),
+                self.monitor_break_even(),
                 name="break_even_monitor"
             )
             self.tasks.append(be_task)
@@ -125,10 +138,53 @@ class TradingCopier:
         
         # Disconnect services
         await self.telegram_listener.stop()
-        self.multi_account_manager.disconnect_all_accounts()
+        self.mt5_manager.disconnect()
         
         logger.info("✅ Cleanup complete")
         logger.info("Goodbye!")
+
+    def add_traded_symbols_to_market_watch(self):
+        """Add all traded symbols to Market Watch"""
+        logger.info("Adding traded symbols to Market Watch...")
+        
+        failed_symbols = 0
+        for symbol in config.TRADED_SYMBOLS:
+            try:
+                # Get broker-specific symbol
+                broker_symbol = get_broker_symbol(symbol, config.ACCOUNT['broker_name'], config.SYMBOL_MAPPING)
+                
+                # Add to Market Watch
+                if not mt5.symbol_select(broker_symbol, True):
+                    logger.warning(f"Could not add symbol {broker_symbol} (from {symbol}) to Market Watch")
+                    failed_symbols += 1
+                else:
+                    logger.debug(f"Added {symbol} -> {broker_symbol} to Market Watch")
+                    
+            except Exception as e:
+                logger.error(f"Error adding symbol {symbol} -> {broker_symbol if 'broker_symbol' in locals() else 'unknown'}: {e}")
+                failed_symbols += 1
+        
+        if failed_symbols > 0:
+            logger.warning(f"Failed to add {failed_symbols} symbols")
+        else:
+            logger.info("All symbols added successfully")
+    
+    async def monitor_break_even(self):
+        """Monitor break-even and apply modifications"""
+        logger.info("Starting break-even monitoring")
+        
+        try:
+            while True:
+                # Monitor and apply break-even modifications
+                self.order_manager.monitor_and_apply_break_even()
+                
+                # Wait before next check
+                await asyncio.sleep(config.BE_CHECK_INTERVAL)
+                
+        except asyncio.CancelledError:
+            logger.info("Break-even monitoring cancelled")
+        except Exception as e:
+            logger.error(f"Error in break-even monitoring: {e}", exc_info=True)
 
 
 async def main():
