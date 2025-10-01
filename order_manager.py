@@ -150,7 +150,6 @@ class OrderManager:
                 "deviation": config.MAX_SLIPPAGE,
                 "magic": config.MAGIC_NUMBER,
                 "comment": comment,
-                "type_time": mt5.ORDER_TIME_GTC,
             }
             
             # Add price for pending orders
@@ -161,7 +160,13 @@ class OrderManager:
                 if signal.expiration_minutes:
                     expiration_time = datetime.now() + timedelta(minutes=signal.expiration_minutes)
                     request["expiration"] = int(expiration_time.timestamp())
+                    request["type_time"] = mt5.ORDER_TIME_SPECIFIED
                     logger.debug(f"Setting expiration for pending order: {expiration_time}")
+                else:
+                    request["type_time"] = mt5.ORDER_TIME_GTC
+            else:
+                # Market orders don't need expiration
+                request["type_time"] = mt5.ORDER_TIME_GTC
             
             # For market orders, we need to specify the filling type
             if order_type in [mt5.ORDER_TYPE_BUY, mt5.ORDER_TYPE_SELL]:
