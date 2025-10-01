@@ -127,7 +127,7 @@ class OrderManager:
             rounded_tp = round(tp, digits)
             
             # Format comment: MessageID/TP1_value (shortened for 16 char limit)
-            comment = f"{signal.message_id}/{int(tp1_value)}"
+            comment = f"{signal.message_id}/{tp1_value}"
             
             # Prepare order request
             request = {
