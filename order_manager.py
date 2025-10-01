@@ -250,13 +250,13 @@ class OrderManager:
                         if direction == 0:  # Buy
                             if current_price >= tp1_value:
                                 tp1_reached = True
-                                logger.info(f"Buy position {position.ticket}: TP1 REACHED - Current {current_price:.2f} >= TP1 {tp1_value:.2f}")
+                                logger.debug(f"Buy position {position.ticket}: TP1 REACHED - Current {current_price:.2f} >= TP1 {tp1_value:.2f}")
                             else:
                                 logger.debug(f"Buy position {position.ticket}: TP1 NOT reached - Current {current_price:.2f} < TP1 {tp1_value:.2f}")
                         else:  # Sell
                             if current_price <= tp1_value:
                                 tp1_reached = True
-                                logger.info(f"Sell position {position.ticket}: TP1 REACHED - Current {current_price:.2f} <= TP1 {tp1_value:.2f}")
+                                logger.debug(f"Sell position {position.ticket}: TP1 REACHED - Current {current_price:.2f} <= TP1 {tp1_value:.2f}")
                             else:
                                 logger.debug(f"Sell position {position.ticket}: TP1 NOT reached - Current {current_price:.2f} > TP1 {tp1_value:.2f}")
                         
@@ -280,7 +280,7 @@ class OrderManager:
                             else:
                                 logger.error(f"❌ Failed to apply break-even to position {position.ticket}")
                         elif tp1_reached:
-                            logger.info(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f})")
+                            logger.debug(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f})")
                         else:
                             logger.debug(f"Position {position.ticket}: No break-even action needed")
                             
