@@ -176,7 +176,7 @@ class OrderManager:
             
             # Send order
             try:
-                logger.debug(f"Sending order request for TP{i}: {request}")
+                logger.info(f"Sending order request for TP{i}: {request}")
                 result = mt5.order_send(request)
                 
                 if result is None:
