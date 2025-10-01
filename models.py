@@ -2,7 +2,7 @@
 """Data models for trading signals"""
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Optional
 
 
 @dataclass
@@ -15,7 +15,9 @@ class Signal:
     message_id: int
     author: str
     symbol: str = "XAUUSD"  # Default to XAUUSD
+    expiration_minutes: Optional[int] = None  # Expiration time in minutes
     
     def __str__(self):
         direction_str = "BUY" if self.direction == 0 else "SELL"
-        return f"Signal({direction_str} {self.symbol} @ {self.entry}, SL: {self.sl}, TPs: {self.tps}, ID: {self.message_id})"
+        exp_str = f", Exp: {self.expiration_minutes}min" if self.expiration_minutes else ""
+        return f"Signal({direction_str} {self.symbol} @ {self.entry}, SL: {self.sl}, TPs: {self.tps}, ID: {self.message_id}{exp_str})"

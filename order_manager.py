@@ -4,6 +4,7 @@
 import logging
 import MetaTrader5 as mt5
 import asyncio
+from datetime import datetime, timedelta
 from typing import List, Tuple, Optional, Dict, Any
 from models import Signal
 from mt5_manager import MT5Manager
@@ -155,6 +156,12 @@ class OrderManager:
             # Add price for pending orders
             if order_type not in [mt5.ORDER_TYPE_BUY, mt5.ORDER_TYPE_SELL]:
                 request["price"] = round(price, digits)
+                
+                # Add expiration for pending orders only
+                if signal.expiration_minutes:
+                    expiration_time = datetime.now() + timedelta(minutes=signal.expiration_minutes)
+                    request["expiration"] = int(expiration_time.timestamp())
+                    logger.debug(f"Setting expiration for pending order: {expiration_time}")
             
             # For market orders, we need to specify the filling type
             if order_type in [mt5.ORDER_TYPE_BUY, mt5.ORDER_TYPE_SELL]:

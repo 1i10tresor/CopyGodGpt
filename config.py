@@ -104,6 +104,13 @@ BE_CHECK_INTERVAL = 0.2  # Interval in seconds for break-even checks
 BE_OFFSET = 0  # Points to add to entry for break-even (0 = exact entry)
 MARKET_ORDER_TOLERANCE_FACTOR = 0.00019444  # Tolerance = price * factor (e.g., 3600 * 0.00019444 = 0.7)
 
+# Trade Expiration Configuration (in minutes)
+EXPIRATION_TIMES = {
+    "DEFAULT": 5,    # 5 minutes for default authors (like RDL)
+    "ICM": 5,        # 5 minutes for ICM
+    "FORTUNE": 720,  # 12 hours (720 minutes) for Fortune
+}
+
 # Logging Configuration
 LOG_LEVEL = "INFO"  # DEBUG, INFO, WARNING, ERROR
 LOG_FILE = "trading_copier.log"
