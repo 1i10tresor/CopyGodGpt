@@ -4,35 +4,18 @@
 # Multi-Account Configuration
 # Single Account Configuration
 ACCOUNT = {
-    "login": 207528,
-    "password": "A.4G3Rv0w2",
-    "server": "FusionMarkets-Demo",
-    "broker_name": "FusionMarkets",
+    "login": 16563439,
+    "password": "2iuZW^K%",
+    "server": "VantageInternational-Live 11",
+    "broker_name": "VantageCent",
     "lot_size": 0.01,
     "mt5_path": r"C:\Program Files\MetaTrader 5 - master\\terminal64.exe"
 }
 
 # Symbol Mapping Configuration
 SYMBOL_MAPPING = {
-    "FusionMarkets": {
-        "suffix": "",
-        "symbols": {
-            "xauusd": "XAUUSD.sc",
-            "gold": "XAUUSD.sc",
-            "xagusd": "XAGUSD.sc",
-            "silver": "XAGUSD.sc",
-            "btcusd": "BTCUSD",
-            "btc": "BTCUSD",
-            "bitcoin": "BTCUSD",
-            "us30": "US30",
-            "us100": "US100", 
-            "us500": "US500",
-            "usoil": "CL-OIL",
-            "cloil": "CL-OIL",
-        }
-    },
     "VantageCent": {
-        "suffix": ".pc",
+        "suffix": ".sc",
         "symbols": {
             "xauusd": "XAUUSD.sc",
             "gold": "XAUUSD.sc",
@@ -44,10 +27,10 @@ SYMBOL_MAPPING = {
             "dj30": "DJ30.r",
             "dj 30": "DJ30.r",
             "us 30": "DJ30.r",
-            "usoil": "CL-OIL.pc",
-            "cloil": "CL-OIL.pc",
-            "cl oil": "CL-OIL.pc",
-            "cl/oil": "CL-OIL.pc",
+            "usoil": "CL-OIL.sc",
+            "cloil": "CL-OIL.sc",
+            "cl oil": "CL-OIL.sc",
+            "cl/oil": "CL-OIL.sc",
             "btcusd": "BTCUSD.sc",
             "btc usd": "BTCUSD.sc",
             "btc": "BTCUSD.sc",
