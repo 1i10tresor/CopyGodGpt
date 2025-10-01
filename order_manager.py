@@ -1,4 +1,106 @@
-      digits = symbol_info.digits
+# order_manager.py
+"""Order placement and management for trading signals"""
+
+import logging
+import MetaTrader5 as mt5
+from datetime import datetime, timedelta
+from typing import List, Dict, Any
+from models import Signal
+from symbol_mapper import get_broker_symbol
+import config
+
+logger = logging.getLogger(__name__)
+
+
+class OrderManager:
+    """Manages order placement and monitoring"""
+    
+    def __init__(self, mt5_manager):
+        self.mt5 = mt5_manager
+    
+    def determine_order_type_and_price(self, signal: Signal, current_price: float) -> tuple:
+        """
+        Determine order type and price based on signal and current market price
+        
+        Returns:
+            tuple: (order_type, price)
+        """
+        entry = signal.entry
+        sl = signal.sl
+        direction = signal.direction
+        
+        # Calculate tolerance based on entry price
+        tolerance = entry * config.MARKET_ORDER_TOLERANCE_FACTOR
+        
+        logger.debug(f"Price analysis - Entry: {entry}, Current: {current_price}, SL: {sl}, Tolerance: {tolerance:.2f}")
+        
+        if direction == 0:  # BUY
+            if current_price <= sl:
+                logger.info(f"BUY signal cancelled - Current price {current_price} <= SL {sl}")
+                return None, None
+            elif sl < current_price < entry + tolerance:
+                logger.info(f"BUY market order - Price {current_price} in range ({sl}, {entry + tolerance})")
+                return mt5.ORDER_TYPE_BUY, current_price
+            elif current_price >= entry + tolerance:
+                logger.info(f"BUY limit order - Price {current_price} >= {entry + tolerance}")
+                return mt5.ORDER_TYPE_BUY_LIMIT, entry
+            else:
+                logger.warning(f"BUY signal - Unexpected price condition")
+                return None, None
+        
+        else:  # SELL
+            if current_price >= sl:
+                logger.info(f"SELL signal cancelled - Current price {current_price} >= SL {sl}")
+                return None, None
+            elif entry - tolerance < current_price < sl:
+                logger.info(f"SELL market order - Price {current_price} in range ({entry - tolerance}, {sl})")
+                return mt5.ORDER_TYPE_SELL, current_price
+            elif current_price <= entry - tolerance:
+                logger.info(f"SELL limit order - Price {current_price} <= {entry - tolerance}")
+                return mt5.ORDER_TYPE_SELL_LIMIT, entry
+            else:
+                logger.warning(f"SELL signal - Unexpected price condition")
+                return None, None
+    
+    def place_orders(self, signal: Signal, account_config: Dict[str, Any]) -> List[int]:
+        """
+        Place orders for a trading signal
+        
+        Args:
+            signal: The trading signal
+            account_config: Account configuration
+            
+        Returns:
+            List of placed order tickets
+        """
+        logger.info(f"Processing signal {signal.message_id} for {account_config['broker_name']}")
+        
+        # Get broker-specific symbol
+        broker_symbol = get_broker_symbol(signal.symbol, account_config['broker_name'], config.SYMBOL_MAPPING)
+        logger.info(f"Symbol mapping: {signal.symbol} -> {broker_symbol}")
+        
+        # Get symbol info
+        symbol_info = self.mt5.get_symbol_info(broker_symbol)
+        if symbol_info is None:
+            logger.error(f"Symbol {broker_symbol} not found or not available")
+            return []
+        
+        # Get current market price
+        current_price = self.mt5.get_market_price(broker_symbol, signal.direction)
+        if current_price is None:
+            logger.error(f"Could not get current price for {broker_symbol}")
+            return []
+        
+        logger.info(f"Current market price for {broker_symbol}: {current_price}")
+        
+        # Determine order type and price
+        order_type, price = self.determine_order_type_and_price(signal, current_price)
+        if order_type is None:
+            logger.warning(f"Signal {signal.message_id} cancelled or invalid")
+            return []
+        
+        # Get symbol precision for rounding
+        digits = symbol_info.digits
         rounded_sl = round(signal.sl, digits)
         
         placed_tickets = []
@@ -46,10 +148,12 @@
                 
                 # Add expiration for pending orders only
                 if signal.expiration_minutes:
-                    expiration_time = datetime.now() + timedelta(minutes=signal.expiration_minutes, seconds=10)
+                    # Use minimum 30 minutes expiration
+                    effective_expiration_minutes = max(signal.expiration_minutes, 30)
+                    expiration_time = datetime.utcnow() + timedelta(minutes=effective_expiration_minutes, seconds=10)
                     request["expiration"] = int(expiration_time.timestamp())
                     request["type_time"] = mt5.ORDER_TIME_SPECIFIED
-                    logger.debug(f"Setting expiration for pending order: {expiration_time} (with 10s buffer)")
+                    logger.info(f"Setting expiration for pending order: {expiration_time} UTC (effective: {effective_expiration_minutes}min with 10s buffer)")
                 else:
                     request["type_time"] = mt5.ORDER_TIME_GTC
             else:
