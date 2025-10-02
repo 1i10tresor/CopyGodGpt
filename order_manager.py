@@ -306,7 +306,7 @@ class OrderManager:
                             else:
                                 logger.error(f"❌ Failed to apply break-even to position {position.ticket}")
                         elif tp1_reached:
-                            logger.info(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f} <= threshold: {dynamic_threshold:.2f})")
+                            logger.debug(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f} <= threshold: {dynamic_threshold:.2f})")
                         else:
                             logger.debug(f"Position {position.ticket}: No break-even action needed")
                             
