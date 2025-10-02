@@ -285,11 +285,14 @@ class OrderManager:
                         
                         # Add to modifications if TP1 reached and SL not already at BE
                         sl_distance_from_entry = abs(position.sl - entry_price)
+                        # Calculate dynamic threshold based on entry price percentage
+                        dynamic_threshold = entry_price * (config.BE_SL_DISTANCE_PERCENTAGE / 100)
                         logger.debug(f"Position {position.ticket}: SL distance from entry: {sl_distance_from_entry:.2f}")
+                        logger.debug(f"Position {position.ticket}: Dynamic threshold (0.01316% of {entry_price:.2f}): {dynamic_threshold:.2f}")
                         
-                        if tp1_reached and sl_distance_from_entry > 0.5:
+                        if tp1_reached and sl_distance_from_entry > dynamic_threshold:
                             new_sl = entry_price + config.BE_OFFSET
-                            logger.info(f"Position {position.ticket}: BREAK-EVEN NEEDED - New SL will be {new_sl:.2f} (entry: {entry_price:.2f}, offset: {config.BE_OFFSET})")
+                            logger.info(f"Position {position.ticket}: BREAK-EVEN NEEDED - New SL will be {new_sl:.2f} (entry: {entry_price:.2f}, offset: {config.BE_OFFSET}, threshold: {dynamic_threshold:.2f})")
                             
                             # Apply break-even modification directly
                             success = self.mt5.modify_sl_for_position(
@@ -303,7 +306,7 @@ class OrderManager:
                             else:
                                 logger.error(f"❌ Failed to apply break-even to position {position.ticket}")
                         elif tp1_reached:
-                            logger.debug(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f})")
+                            logger.info(f"Position {position.ticket}: TP1 reached but SL already at break-even (distance: {sl_distance_from_entry:.2f} <= threshold: {dynamic_threshold:.2f})")
                         else:
                             logger.debug(f"Position {position.ticket}: No break-even action needed")
                             

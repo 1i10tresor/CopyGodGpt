@@ -85,6 +85,7 @@ MAX_PRICE = 3900  # Maximum valid entry price
 # Break Even Configuration
 BE_CHECK_INTERVAL = 0.2  # Interval in seconds for break-even checks
 BE_OFFSET = 0  # Points to add to entry for break-even (0 = exact entry)
+BE_SL_DISTANCE_PERCENTAGE = 0.01316  # Percentage of entry price for SL distance threshold (0.01316%)
 MARKET_ORDER_TOLERANCE_FACTOR = 0.00019444  # Tolerance = price * factor (e.g., 3600 * 0.00019444 = 0.7)
 
 # Trade Expiration Configuration (in minutes)
