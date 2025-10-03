@@ -14,6 +14,23 @@ ACCOUNT = {
 
 # Symbol Mapping Configuration
 SYMBOL_MAPPING = {
+    "FusionMarkets": {
+        "suffix": "",
+        "symbols": {
+            "xauusd": "XAUUSD.sc",
+            "gold": "XAUUSD.sc",
+            "xagusd": "XAGUSD.sc",
+            "silver": "XAGUSD.sc",
+            "btcusd": "BTCUSD",
+            "btc": "BTCUSD",
+            "bitcoin": "BTCUSD",
+            "us30": "US30",
+            "us100": "US100", 
+            "us500": "US500",
+            "usoil": "CL-OIL",
+            "cloil": "CL-OIL",
+        }
+    },
     "VantageCent": {
         "suffix": ".sc",
         "symbols": {
@@ -69,8 +86,8 @@ SYMBOL_MAPPING = {
 API_ID = 22757187  # Your Telegram API ID
 API_HASH = "4b8c65f754c80ee53a55c162d141042d"  # Your Telegram API Hash
 PHONE_NUMBER = "+33760110785"  # Your phone number with country code
-CHANNEL_ID =  -1002925234012
-# CHANNEL_ID =  -1001946597047
+# CHANNEL_ID =  -1003138138214
+CHANNEL_ID =  -1001946597047
 
 GEMINI_API_KEY = "AIzaSyCtqNS9XJ_F_6H7kW9XrH-HtypS-zOSHSU"
 
@@ -88,10 +105,9 @@ BE_OFFSET = 0  # Points to add to entry for break-even (0 = exact entry)
 BE_SL_DISTANCE_PERCENTAGE = 0.01316  # Percentage of entry price for SL distance threshold (0.01316%)
 MARKET_ORDER_TOLERANCE_FACTOR = 0.00019444  # Tolerance = price * factor (e.g., 3600 * 0.00019444 = 0.7)
 
-# Trade Expiration Configuration (in minutes)
 EXPIRATION_TIMES = {
-    "DEFAULT": 5,    # 5 minutes for default authors (like RDL)
-    "ICM": 5,        # 5 minutes for ICM
+    "DEFAULT": 720,    # 5 minutes for default authors (like RDL)
+    "ICM": 720,        # 5 minutes for ICM
     "FORTUNE": 720,  # 12 hours (720 minutes) for Fortune
 }
 
@@ -103,11 +119,37 @@ LOG_ENCODING = "utf-8"  # UTF-8 encoding for proper emoji support
 
 # Traded Symbols (for Fortune parser and future multi-symbol support)
 TRADED_SYMBOLS = [
-    "XAUUSD",
-    "XAGUSD",
-    "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD",
-    "EURGBP", "EURJPY", "GBPJPY", "GBPCAD", "EURCAD",
-    "BTCUSD",
-    "US30", "US100", "US500",
-    "USOIL",
+    # ---- MAJORS ----
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCHF",
+    "USDCAD",
+    "AUDUSD",
+    "NZDUSD",
+
+    # ---- MINORS ----
+    # EUR crosses
+    "EURGBP", "EURJPY", "EURCHF", "EURAUD", "EURNZD", "EURCAD",
+
+    # GBP crosses
+    "GBPJPY", "GBPCHF", "GBPAUD", "GBPNZD", "GBPCAD",
+
+    # JPY crosses
+    "AUDJPY", "NZDJPY", "CADJPY", "CHFJPY",
+
+    # AUD & NZD crosses
+    "AUDNZD", "AUDCHF", "AUDCAD", "NZDCHF", "NZDCAD",
+
+    # CAD & CHF cross
+    "CADCHF",
+
+    # ---- COMMODITIES ----
+    "XAUUSD",  # Or
+    "USOIL",   # Pétrole brut (WTI)
+
+    # ---- INDICES ----
+    "US30",   # Dow Jones 30
+    "US100",  # Nasdaq 100
+    "US500",  # S&P 500
 ]
