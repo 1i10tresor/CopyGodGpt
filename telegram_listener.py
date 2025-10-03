@@ -19,6 +19,8 @@ class TelegramListener:
         self.order_manager = order_manager
         self.account_config = account_config
         self.parser = SignalParser()
+        # List of channels to monitor
+        self.channels = [config.CHANNEL_ID_1, config.CHANNEL_ID_2]
     
     async def start(self):
         """Start Telegram client"""
@@ -26,15 +28,16 @@ class TelegramListener:
             await self.client.start(phone=config.PHONE_NUMBER)
             logger.info("✅ Telegram client started successfully")
             
-            # Get channel info
-            try:
-                entity = await self.client.get_entity(config.CHANNEL_ID)
-                if hasattr(entity, 'title'):
-                    logger.info(f"Connected to channel: {entity.title}")
-                else:
-                    logger.info(f"Connected to channel ID: {config.CHANNEL_ID}")
-            except Exception as e:
-                logger.warning(f"Could not get channel info: {e}")
+            # Get info for all channels
+            for i, channel_id in enumerate(self.channels, 1):
+                try:
+                    entity = await self.client.get_entity(channel_id)
+                    if hasattr(entity, 'title'):
+                        logger.info(f"Connected to channel {i}: {entity.title} (ID: {channel_id})")
+                    else:
+                        logger.info(f"Connected to channel {i} ID: {channel_id}")
+                except Exception as e:
+                    logger.warning(f"Could not get info for channel {i} (ID: {channel_id}): {e}")
             
             return True
         except Exception as e:
@@ -44,11 +47,24 @@ class TelegramListener:
     async def listen_for_signals(self):
         """Listen for new messages in the channel"""
         
-        @self.client.on(events.NewMessage(chats=config.CHANNEL_ID))
+        @self.client.on(events.NewMessage(chats=self.channels))
         async def message_handler(event):
             """Handle new messages from the channel"""
             try:
                 message = event.message
+                
+                # Identify which channel the message came from
+                channel_source = "Unknown"
+                try:
+                    chat = await event.get_chat()
+                    if hasattr(chat, 'title'):
+                        channel_source = chat.title
+                    elif hasattr(chat, 'username'):
+                        channel_source = chat.username
+                    else:
+                        channel_source = f"Channel {message.peer_id.channel_id if hasattr(message.peer_id, 'channel_id') else 'Unknown'}"
+                except:
+                    channel_source = f"Channel {message.peer_id.channel_id if hasattr(message.peer_id, 'channel_id') else 'Unknown'}"
                 
                 # Extract author information based on sender type
                 author = "Unknown"
@@ -89,13 +105,13 @@ class TelegramListener:
                 # Log message receipt
                 preview = text[:100] + "..." if len(text) > 100 else text
                 preview = preview.replace('\n', ' ')  # Single line for log
-                logger.info(f"📩 New message from {author}: {preview}")
+                logger.info(f"📩 New message from {author} in {channel_source}: {preview}")
                 
                 # Parse signal
                 signal = self.parser.parse(text, author, message.id)
                 
                 if signal:
-                    logger.info(f"📊 Valid signal detected: {signal}")
+                    logger.info(f"📊 Valid signal detected from {channel_source}: {signal}")
                     
                     # Place orders on the account
                     placed_tickets = self.order_manager.place_orders(signal, self.account_config)
@@ -105,12 +121,12 @@ class TelegramListener:
                     else:
                         logger.warning(f"⚠️ No orders placed for signal #{signal.message_id}")
                 else:
-                    logger.debug(f"Not a valid trading signal from {author}")
+                    logger.debug(f"Not a valid trading signal from {author} in {channel_source}")
                 
             except Exception as e:
                 logger.error(f"❌ Error processing message: {e}", exc_info=True)
         
-        logger.info(f"👂 Listening for signals in channel {config.CHANNEL_ID}")
+        logger.info(f"👂 Listening for signals in {len(self.channels)} channels: {self.channels}")
         logger.info("Bot is running. Press Ctrl+C to stop.")
         
         # Keep the client running
