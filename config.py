@@ -87,7 +87,7 @@ SYMBOLS_MIN_LOT_0_1 = ["DJ30", "NAS100", "SP500"]
 
 # Price Validation
 MIN_PRICE = 3500  # Minimum valid entry price
-MAX_PRICE = 3900  # Maximum valid entry price
+MAX_PRICE = 4100  # Maximum valid entry price
 
 # Break Even Configuration
 BE_CHECK_INTERVAL = 0.2  # Interval in seconds for break-even checks
