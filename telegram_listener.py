@@ -102,6 +102,27 @@ class TelegramListener:
                     logger.debug("Skipping empty message")
                     return
                 
+                # Check for modification commands first
+                text_lower = text.lower().strip()
+                modification_commands = [
+                    "cloturez now", "clôtuez now", "breakeven", "be", "b.e", "prendre tp1 now"
+                ]
+                
+                is_modification_command = any(cmd in text_lower for cmd in modification_commands)
+                
+                if is_modification_command:
+                    # Check if this is a reply to another message
+                    if message.reply_to_msg_id:
+                        original_message_id = message.reply_to_msg_id
+                        logger.info(f"🔧 Modification command detected: '{text}' in reply to message {original_message_id}")
+                        
+                        # Handle the modification command
+                        self.order_manager.handle_modification_command(original_message_id, text)
+                        return
+                    else:
+                        logger.warning(f"⚠️ Modification command '{text}' ignored - not a reply to any message")
+                        return
+                
                 # Log message receipt
                 preview = text[:100] + "..." if len(text) > 100 else text
                 preview = preview.replace('\n', ' ')  # Single line for log

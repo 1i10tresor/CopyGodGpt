@@ -4,7 +4,7 @@
 import logging
 import MetaTrader5 as mt5
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from models import Signal
 from symbol_mapper import get_broker_symbol
 import config
@@ -319,3 +319,155 @@ class OrderManager:
         
         except Exception as e:
             logger.error(f"Break-even monitor error: {e}", exc_info=True)
+    
+    def handle_modification_command(self, original_message_id: int, command_text: str):
+        """
+        Handle modification commands for existing positions
+        
+        Args:
+            original_message_id: ID of the original signal message
+            command_text: The modification command text
+        """
+        logger.info(f"Processing modification command for message {original_message_id}: '{command_text}'")
+        
+        # Normalize command
+        command_text_lower = command_text.lower().strip()
+        
+        # Get all positions with our magic number
+        try:
+            positions = mt5.positions_get(magic=config.MAGIC_NUMBER)
+            if positions is None:
+                logger.warning(f"No positions found for modification command")
+                return
+            
+            # Filter positions that belong to the original message
+            target_positions = []
+            for position in positions:
+                if position.comment and position.comment.startswith(f"{original_message_id}/"):
+                    target_positions.append(position)
+            
+            if not target_positions:
+                logger.warning(f"No positions found for message ID {original_message_id}")
+                return
+            
+            logger.info(f"Found {len(target_positions)} positions for message ID {original_message_id}")
+            
+            # Execute specific actions based on command
+            if command_text_lower in ["cloturez now", "clôtuez now"]:
+                self._close_positions(target_positions)
+            elif command_text_lower in ["breakeven", "be", "b.e"]:
+                self._apply_breakeven_to_positions(target_positions)
+            elif command_text_lower == "prendre tp1 now":
+                self._close_tp1_position(target_positions)
+            else:
+                logger.warning(f"Unrecognized modification command: '{command_text}'")
+                
+        except Exception as e:
+            logger.error(f"Error handling modification command: {e}", exc_info=True)
+    
+    def _close_positions(self, positions: List[Any]):
+        """Close all specified positions"""
+        logger.info(f"Closing {len(positions)} positions")
+        
+        for position in positions:
+            try:
+                # Determine close order type (opposite of position type)
+                if position.type == mt5.POSITION_TYPE_BUY:
+                    close_type = mt5.ORDER_TYPE_SELL
+                else:
+                    close_type = mt5.ORDER_TYPE_BUY
+                
+                # Get current market price
+                current_price = self.mt5.get_market_price(position.symbol, position.type)
+                if current_price is None:
+                    logger.error(f"Could not get market price for {position.symbol}")
+                    continue
+                
+                # Prepare close request
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": position.symbol,
+                    "volume": position.volume,
+                    "type": close_type,
+                    "position": position.ticket,
+                    "price": current_price,
+                    "deviation": config.MAX_SLIPPAGE,
+                    "magic": config.MAGIC_NUMBER,
+                    "comment": f"Close {position.comment}",
+                    "type_filling": mt5.ORDER_FILLING_IOC,
+                }
+                
+                # Send close order
+                result = mt5.order_send(request)
+                
+                if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+                    logger.info(f"✅ Position {position.ticket} closed successfully")
+                else:
+                    error_msg = f"❌ Failed to close position {position.ticket}"
+                    if result:
+                        error_msg += f": {result.retcode}"
+                        if hasattr(result, 'comment') and result.comment:
+                            error_msg += f" - {result.comment}"
+                    logger.error(error_msg)
+                    
+            except Exception as e:
+                logger.error(f"Error closing position {position.ticket}: {e}")
+    
+    def _apply_breakeven_to_positions(self, positions: List[Any]):
+        """Apply breakeven (move SL to entry) for all specified positions"""
+        logger.info(f"Applying breakeven to {len(positions)} positions")
+        
+        for position in positions:
+            try:
+                new_sl = position.price_open + config.BE_OFFSET
+                
+                success = self.mt5.modify_sl_for_position(
+                    ticket=position.ticket,
+                    new_sl=new_sl,
+                    current_tp=position.tp
+                )
+                
+                if success:
+                    logger.info(f"✅ Breakeven applied to position {position.ticket} - SL moved to {new_sl}")
+                else:
+                    logger.error(f"❌ Failed to apply breakeven to position {position.ticket}")
+                    
+            except Exception as e:
+                logger.error(f"Error applying breakeven to position {position.ticket}: {e}")
+    
+    def _close_tp1_position(self, positions: List[Any]):
+        """Close the TP1 position (position whose TP matches the TP1 value from comment)"""
+        logger.info(f"Looking for TP1 position among {len(positions)} positions")
+        
+        for position in positions:
+            try:
+                # Extract TP1 value from comment (format: messageId/tp1Value)
+                if not position.comment or '/' not in position.comment:
+                    logger.warning(f"Position {position.ticket} has invalid comment format: '{position.comment}'")
+                    continue
+                
+                comment_parts = position.comment.split('/')
+                if len(comment_parts) < 2:
+                    logger.warning(f"Position {position.ticket} comment missing TP1 value: '{position.comment}'")
+                    continue
+                
+                try:
+                    tp1_value = float(comment_parts[1])
+                except ValueError:
+                    logger.warning(f"Position {position.ticket} has invalid TP1 value in comment: '{comment_parts[1]}'")
+                    continue
+                
+                # Check if this position's TP exactly matches the TP1 value
+                if position.tp == tp1_value:
+                    logger.info(f"Found TP1 position {position.ticket} with TP={position.tp} matching TP1={tp1_value}")
+                    
+                    # Close this specific position
+                    self._close_positions([position])
+                    return
+                else:
+                    logger.debug(f"Position {position.ticket} TP={position.tp} does not match TP1={tp1_value}")
+                    
+            except Exception as e:
+                logger.error(f"Error processing position {position.ticket} for TP1 close: {e}")
+        
+        logger.warning("No TP1 position found to close")
