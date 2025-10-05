@@ -4,8 +4,8 @@
 # Multi-Account Configuration
 # Single Account Configuration
 ACCOUNT = {
-    "login": 11164590,
-    "password": "Ex*42Opp",
+    "login": 11164735,
+    "password": "J&P2n8y%",
     "server": "VantageInternational-Demo",
     "broker_name": "VantageDemo",
     "mt5_path": r"C:\Program Files\MetaTrader 5 - master\\terminal64.exe"
