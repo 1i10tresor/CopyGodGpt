@@ -4,33 +4,16 @@
 # Multi-Account Configuration
 # Single Account Configuration
 ACCOUNT = {
-    "login": 16563439,
-    "password": "2iuZW^K%",
-    "server": "VantageInternational-Live 11",
-    "broker_name": "VantageCent",
+    "login": 11164590,
+    "password": "Ex*42Opp",
+    "server": "VantageInternational-Demo",
+    "broker_name": "VantageDemo",
     "lot_size": 0.01,
     "mt5_path": r"C:\Program Files\MetaTrader 5 - master\\terminal64.exe"
 }
 
 # Symbol Mapping Configuration
 SYMBOL_MAPPING = {
-    "FusionMarkets": {
-        "suffix": "",
-        "symbols": {
-            "xauusd": "XAUUSD.sc",
-            "gold": "XAUUSD.sc",
-            "xagusd": "XAGUSD.sc",
-            "silver": "XAGUSD.sc",
-            "btcusd": "BTCUSD",
-            "btc": "BTCUSD",
-            "bitcoin": "BTCUSD",
-            "us30": "US30",
-            "us100": "US100", 
-            "us500": "US500",
-            "usoil": "CL-OIL",
-            "cloil": "CL-OIL",
-        }
-    },
     "VantageCent": {
         "suffix": ".sc",
         "symbols": {
@@ -51,34 +34,33 @@ SYMBOL_MAPPING = {
             "btcusd": "BTCUSD.sc",
             "btc usd": "BTCUSD.sc",
             "btc": "BTCUSD.sc",
+            "BTC": "BTCUSD.sc",
             "bitcoin": "BTCUSD.sc",
-        }
+        },
     },
-    "PuprimeCent": {
-        "suffix": ".sc",
+    "VantageDemo": {
+        "suffix": "+",
         "symbols": {
-            "xauusd": "XAUUSD.sc",
-            "gold": "XAUUSD.sc",
-            "xagusd": "XAGUSD.sc", 
-            "silver": "XAGUSD.sc",
+            "xauusd": "XAUUSD+",
+            "gold": "XAUUSD+",
+            "xagusd": "XAGUSD+",
+            "silver": "XAGUSD+",
+            "nas100": "NAS100",
+            "us100": "NAS100",
+            "us30": "DJ30",
+            "dj30": "DJ30",
+            "dj 30": "DJ30",
+            "us 30": "DJ30",
+            "usoil": "CL-OIL",
+            "cloil": "CL-OIL",
+            "cl oil": "CL-OIL",
+            "cl/oil": "CL-OIL",
             "btcusd": "BTCUSD",
+            "btc usd": "BTCUSD",
             "btc": "BTCUSD",
+            "BTC": "BTCUSD",
             "bitcoin": "BTCUSD",
-            "dj30": "DJ30.s",
-            "us30": "DJ30.s",
-            "us100": "NAS100.s",
-            "us 100": "NAS100.s",
-            "nas100": "NAS100.s",
-            "nasdaq100": "NAS100.s",
-            "usoil": "CL-OIL.sc",
-            "cloil": "CL-OIL.sc",
-            "cl oil": "CL-OIL.sc",
-            "cl/oil": "CL-OIL.sc",
-        }
-    },
-    "Puprime": {
-        "suffix": ".",
-        "symbols": {}
+        },
     },
 }
 
