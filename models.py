@@ -18,3 +18,4 @@ class Signal:
     
     def __str__(self):
         direction_str = "BUY" if self.direction == 0 else "SELL"
+        return f"Signal({direction_str} {self.symbol} @ {self.entry}, SL: {self.sl}, TPs: {self.tps}, ID: {self.message_id})"
