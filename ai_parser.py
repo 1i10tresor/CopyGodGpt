@@ -57,6 +57,7 @@ class AISignalParser:
            - Si un TP est "open", le retourner comme string "open"
            - Sinon retourner comme valeur numérique
            - Si partiels (ex: "tp1 88", "tp2 04"), les reconstruire de la même manière que le SL vis à vis du point d'entrée. Donc si point entrée est 3279, le nombre le plus proche avec 88 est 3288
+           -Si les TP sont données sous cette forme "TP 20 40 60 80 100 200 500 PIPS OPEN" ou "TP 20 40 60 80 100 200 PIPS OPEN", il faut ignoré et calculer à la place 4 tp :tp1 = prix d'entrée + distance du SL/2, prix d'entrée + distance du SL, prix d'entrée + distance du SL*1.5 et enfin prix d'entrée + distance du sl*3. Et bien sur en - pour un sell, en + pour un buy. Distance du SL est = valeur aboslue (Prix entrée - SL)
         
         Format de sortie STRICT :
         {{
