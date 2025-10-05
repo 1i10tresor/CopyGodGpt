@@ -29,8 +29,12 @@ def get_broker_symbol(standard_symbol: str, broker_name: str, symbol_mapping_con
         broker_config = symbol_mapping_config[broker_name]
         
         # Check for explicit symbol mapping
-        if "symbols" in broker_config and standard_symbol.lower() in broker_config["symbols"]:
-            mapped_symbol = broker_config["symbols"][standard_symbol.lower()]
+        if "symbols" in broker_config:
+            # Create a case-insensitive lookup dictionary
+            symbols_lower = {key.lower(): value for key, value in broker_config["symbols"].items()}
+            
+            if standard_symbol.lower() in symbols_lower:
+                mapped_symbol = symbols_lower[standard_symbol.lower()]
             logger.debug(f"Symbol mapping: {standard_symbol} -> {mapped_symbol} for {broker_name}")
             return mapped_symbol
         
