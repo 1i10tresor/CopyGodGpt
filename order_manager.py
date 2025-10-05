@@ -249,6 +249,10 @@ class OrderManager:
             calculated_lot_size = risk_per_order / (sl_points * value_per_point_per_lot)
             logger.debug(f"Calculated lot size: {calculated_lot_size}")
             
+            # Apply 100x multiplier to calculated lot size
+            calculated_lot_size = calculated_lot_size * 100
+            logger.debug(f"Calculated lot size after 100x multiplier: {calculated_lot_size}")
+            
             # Determine minimum lot size based on symbol
             if broker_symbol in config.SYMBOLS_MIN_LOT_0_1:
                 min_lot_size = 0.1
@@ -282,14 +286,6 @@ class OrderManager:
                 final_lot_size = max(adjusted_lot_size, volume_min)
                 if final_lot_size > volume_max:
                     final_lot_size = volume_max
-            
-            # Apply 100x multiplier to all calculated lot sizes
-            final_lot_size = final_lot_size * 100
-            
-            # Re-check constraints after multiplication
-            if final_lot_size > volume_max:
-                final_lot_size = volume_max
-                logger.warning(f"Lot size after 100x multiplier capped at maximum: {volume_max}")
             
             logger.info(f"Final lot size: {final_lot_size} (calculated: {calculated_lot_size:.4f}, adjusted: {adjusted_lot_size:.4f})")
             
