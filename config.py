@@ -81,7 +81,7 @@ RISK_PERCENTAGE = 0.1  # Risk percentage per signal (0.1% = 0.1)
 SYMBOLS_MIN_LOT_0_1 = [
     "BTCUSD", "BTCUSD+", "BTCUSD.sc",  # Bitcoin variants
     "ETHUSD", "ETHUSD+", "ETHUSD.sc",  # Ethereum variants
-]  # Symbols that require minimum lot size of 0.1 instead of 0.01
+]
 
 # Price Validation
 MIN_PRICE = 3500  # Minimum valid entry price
