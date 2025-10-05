@@ -1,14 +1,54 @@
 # Trading Signal Copier
 
-Automated trading bot that copies signals from Telegram to MetaTrader 5.
+Robot de trading automatisé qui copie les signaux Telegram vers MetaTrader 5 en temps réel.
 
-## Features
+## 🚀 Fonctionnement du Robot
+
+### 📱 Écoute des Signaux Telegram
+Le robot surveille en permanence vos canaux Telegram configurés et détecte automatiquement :
+- **Signaux ICM** : Format spécialisé avec TPs fixes (+2, +5, +8, +200)
+- **Signaux Fortune** : Multi-symboles avec TPs variables + "open"
+- **Signaux par défaut** : Format standard avec TPs calculés (+2, +4, +6, "open")
+
+### 🎯 Placement Intelligent des Ordres
+Le robot analyse le prix actuel vs le prix d'entrée du signal :
+- **Ordre au marché** : Si le prix est proche de l'entrée (tolérance de 0.7 points)
+- **Ordre limite** : Si le prix est éloigné de l'entrée
+- **Annulation automatique** : Si le prix a dépassé le stop loss
+
+### 📊 Gestion Multi-TP
+Pour chaque signal, le robot place **un ordre séparé pour chaque Take Profit** :
+- TP1, TP2, TP3 : Ordres avec prix fixes
+- TP4 "open" : Ordre sans TP (profit illimité)
+- **Commentaire unique** : Chaque ordre contient l'ID du signal + valeur TP1
+
+### ⚡ Break-Even Automatique
+Le robot surveille vos positions en continu :
+- **Détection TP1** : Quand le prix atteint le premier Take Profit
+- **Modification SL** : Déplace automatiquement le Stop Loss au point d'entrée
+- **Protection garantie** : Aucune perte possible une fois TP1 atteint
+
+### 🎮 Commandes de Gestion Interactive
+Répondez directement aux signaux Telegram pour contrôler vos ordres :
+- **"Cloturez now"** → Ferme tous les ordres du signal
+- **"breakeven"** → Force le break-even sur toutes les positions
+- **"prendre tp1 now"** → Ferme uniquement la position TP1
+
+### 🔄 Expiration Intelligente
+Les ordres en attente expirent automatiquement :
+- **ICM & Défaut** : 12 minutes (720 secondes)
+- **Fortune** : 12 minutes (720 secondes)
+- **Synchronisation serveur** : Calcul automatique du décalage horaire MT5
+
+## ✨ Avantages Clés
 
 - ✅ Automatic signal detection from Telegram channels
-- ✅ Multi-author signal parsing (ICM, default formats)
-- ✅ Smart order placement (market/pending)
-- ✅ Automatic break-even management
-- ✅ Comprehensive error handling and logging
+- ✅ **Réaction instantanée** : Ordres placés en moins de 2 secondes
+- ✅ **Gestion du risque** : Break-even automatique + expiration des ordres
+- ✅ **Multi-symboles** : XAUUSD, EURUSD, indices, matières premières...
+- ✅ **Contrôle total** : Commandes interactives via Telegram
+- ✅ **Fiabilité** : Gestion d'erreurs complète + logs détaillés
+- ✅ **Compatibilité** : Fonctionne avec tous les brokers MT5
 
 ## Installation
 
