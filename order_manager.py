@@ -103,6 +103,14 @@ class OrderManager:
         digits = symbol_info.digits
         rounded_sl = round(signal.sl, digits)
         
+        # Calculate lot size based on risk management (once per signal)
+        lot_size = self.calculate_lot_size(signal, broker_symbol)
+        if lot_size is None:
+            logger.error(f"Could not calculate lot size for signal {signal.message_id}")
+            return []
+        
+        logger.info(f"Calculated lot size: {lot_size} for signal {signal.message_id}")
+        
         placed_tickets = []
         
         # Get TP1 value for comment (first non-"open" TP)
@@ -133,7 +141,7 @@ class OrderManager:
             request = {
                 "action": mt5.TRADE_ACTION_DEAL if order_type in [mt5.ORDER_TYPE_BUY, mt5.ORDER_TYPE_SELL] else mt5.TRADE_ACTION_PENDING,
                 "symbol": broker_symbol,
-                "volume": account_config['lot_size'],
+                "volume": lot_size,
                 "type": order_type,
                 "sl": rounded_sl,
                 "tp": rounded_tp,
@@ -180,6 +188,108 @@ class OrderManager:
             logger.warning(f"No orders placed for signal {signal.message_id} on {account_config['broker_name']}")
         
         return placed_tickets
+    
+    def calculate_lot_size(self, signal: Signal, broker_symbol: str) -> Optional[float]:
+        """
+        Calculate lot size based on risk percentage and signal parameters
+        
+        Args:
+            signal: The trading signal
+            broker_symbol: The broker-specific symbol
+            
+        Returns:
+            Calculated lot size or None if calculation fails
+        """
+        try:
+            # Get account balance
+            balance = self.mt5.get_account_balance()
+            if balance is None:
+                logger.error("Could not get account balance for lot size calculation")
+                return None
+            
+            # Get symbol trading properties
+            symbol_props = self.mt5.get_symbol_trade_properties(broker_symbol)
+            if symbol_props is None:
+                logger.error(f"Could not get symbol properties for {broker_symbol}")
+                return None
+            
+            # Calculate total risk amount for the signal
+            total_risk_amount = balance * (config.RISK_PERCENTAGE / 100)
+            logger.debug(f"Total risk amount: {total_risk_amount} ({config.RISK_PERCENTAGE}% of {balance})")
+            
+            # Count valid TPs (non-"open")
+            valid_tps = [tp for tp in signal.tps if tp != "open"]
+            num_orders = len(valid_tps)
+            
+            if num_orders == 0:
+                logger.warning("No valid TPs found for lot size calculation")
+                return None
+            
+            # Calculate risk per order
+            risk_per_order = total_risk_amount / num_orders
+            logger.debug(f"Risk per order: {risk_per_order} (total: {total_risk_amount} / {num_orders} orders)")
+            
+            # Calculate SL distance in points
+            sl_points = abs(signal.entry - signal.sl) / symbol_props['point']
+            logger.debug(f"SL distance: {sl_points} points")
+            
+            # Calculate value per point per lot
+            if symbol_props['trade_tick_size'] == 0:
+                logger.error(f"Invalid trade_tick_size (0) for {broker_symbol}")
+                return None
+            
+            value_per_point_per_lot = symbol_props['trade_tick_value'] / symbol_props['trade_tick_size']
+            logger.debug(f"Value per point per lot: {value_per_point_per_lot}")
+            
+            # Calculate theoretical lot size
+            if sl_points == 0 or value_per_point_per_lot == 0:
+                logger.error(f"Invalid calculation parameters: sl_points={sl_points}, value_per_point_per_lot={value_per_point_per_lot}")
+                return None
+            
+            calculated_lot_size = risk_per_order / (sl_points * value_per_point_per_lot)
+            logger.debug(f"Calculated lot size: {calculated_lot_size}")
+            
+            # Determine minimum lot size based on symbol
+            if broker_symbol in config.SYMBOLS_MIN_LOT_0_1:
+                min_lot_size = 0.1
+                logger.debug(f"Symbol {broker_symbol} requires minimum lot size of 0.1")
+            else:
+                min_lot_size = 0.01
+                logger.debug(f"Symbol {broker_symbol} uses standard minimum lot size of 0.01")
+            
+            # Apply minimum lot size constraint
+            adjusted_lot_size = max(calculated_lot_size, min_lot_size)
+            
+            # Ensure lot size respects symbol constraints
+            volume_min = max(symbol_props['volume_min'], min_lot_size)
+            volume_max = symbol_props['volume_max']
+            volume_step = symbol_props['volume_step']
+            
+            # Round to nearest valid step
+            if volume_step > 0:
+                steps = int(adjusted_lot_size / volume_step)
+                final_lot_size = steps * volume_step
+                
+                # Ensure it's at least the minimum
+                if final_lot_size < volume_min:
+                    final_lot_size = volume_min
+                
+                # Ensure it doesn't exceed maximum
+                if final_lot_size > volume_max:
+                    final_lot_size = volume_max
+                    logger.warning(f"Lot size capped at maximum: {volume_max}")
+            else:
+                final_lot_size = max(adjusted_lot_size, volume_min)
+                if final_lot_size > volume_max:
+                    final_lot_size = volume_max
+            
+            logger.info(f"Final lot size: {final_lot_size} (calculated: {calculated_lot_size:.4f}, adjusted: {adjusted_lot_size:.4f})")
+            
+            return final_lot_size
+            
+        except Exception as e:
+            logger.error(f"Error calculating lot size: {e}", exc_info=True)
+            return None
     
     def monitor_and_apply_break_even(self):
         """

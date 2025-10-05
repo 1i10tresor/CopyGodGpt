@@ -67,6 +67,46 @@ class MT5Manager:
             mt5.shutdown()
             self.connected = False
             logger.info("Disconnected from MT5")
+    
+    def get_account_balance(self) -> Optional[float]:
+        """Get current account balance"""
+        try:
+            account_info = mt5.account_info()
+            if account_info is None:
+                logger.error("Failed to get account info")
+                return None
+            
+            balance = account_info.balance
+            logger.debug(f"Account balance: {balance}")
+            return balance
+            
+        except Exception as e:
+            logger.error(f"Error getting account balance: {e}")
+            return None
+    
+    def get_symbol_trade_properties(self, symbol: str) -> Optional[dict]:
+        """Get symbol trading properties for lot size calculation"""
+        try:
+            symbol_info = mt5.symbol_info(symbol)
+            if symbol_info is None:
+                logger.error(f"Failed to get symbol info for {symbol}")
+                return None
+            
+            properties = {
+                'point': symbol_info.point,
+                'trade_tick_value': symbol_info.trade_tick_value,
+                'trade_tick_size': symbol_info.trade_tick_size,
+                'volume_min': symbol_info.volume_min,
+                'volume_max': symbol_info.volume_max,
+                'volume_step': symbol_info.volume_step,
+            }
+            
+            logger.debug(f"Symbol {symbol} properties: {properties}")
+            return properties
+            
+        except Exception as e:
+            logger.error(f"Error getting symbol properties for {symbol}: {e}")
+            return None
             
     
     def get_symbol_info(self, symbol: str):

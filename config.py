@@ -8,7 +8,6 @@ ACCOUNT = {
     "password": "Ex*42Opp",
     "server": "VantageInternational-Demo",
     "broker_name": "VantageDemo",
-    "lot_size": 0.01,
     "mt5_path": r"C:\Program Files\MetaTrader 5 - master\\terminal64.exe"
 }
 
@@ -76,6 +75,13 @@ GEMINI_API_KEY = "AIzaSyCtqNS9XJ_F_6H7kW9XrH-HtypS-zOSHSU"
 # Trading Configuration
 MAGIC_NUMBER = 20241211  # Magic number for identifying bot's orders
 MAX_SLIPPAGE = 0  # Maximum slippage in points
+
+# Risk Management Configuration
+RISK_PERCENTAGE = 0.1  # Risk percentage per signal (0.1% = 0.1)
+SYMBOLS_MIN_LOT_0_1 = [
+    "BTCUSD", "BTCUSD+", "BTCUSD.sc",  # Bitcoin variants
+    "ETHUSD", "ETHUSD+", "ETHUSD.sc",  # Ethereum variants
+]  # Symbols that require minimum lot size of 0.1 instead of 0.01
 
 # Price Validation
 MIN_PRICE = 3500  # Minimum valid entry price
