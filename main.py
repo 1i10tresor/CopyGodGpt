@@ -70,24 +70,6 @@ class TradingCopier:
             return False
         logger.info("✅ MT5 account connected successfully")
         
-        # Calculate time offset between system and MT5 server
-        logger.info("Calculating time offset between system and MT5 server...")
-        server_time = self.mt5_manager.get_server_time_utc()
-        if server_time:
-            system_time = datetime.utcnow()
-            time_diff = server_time - system_time
-            self.mt5_manager.calculated_time_offset_minutes = int(time_diff.total_seconds() / 60)
-            
-            logger.info(f"System time (UTC): {system_time}")
-            logger.info(f"MT5 server time (UTC): {server_time}")
-            logger.info(f"Calculated time offset: {self.mt5_manager.calculated_time_offset_minutes} minutes")
-            
-            if abs(self.mt5_manager.calculated_time_offset_minutes) > 5:
-                logger.warning(f"Large time offset detected: {self.mt5_manager.calculated_time_offset_minutes} minutes")
-        else:
-            logger.warning("Could not calculate time offset - using default value of 0")
-            self.mt5_manager.calculated_time_offset_minutes = 0
-        
         # Add traded symbols to Market Watch
         self.add_traded_symbols_to_market_watch()
         

@@ -150,7 +150,6 @@ class SignalParser:
             message_id=message_id,
             author="ICM",
             symbol=symbol,
-            expiration_minutes=config.EXPIRATION_TIMES["ICM"]
         )
     
     def parse_default_signal(self, text: str, message_id: int, author: str) -> Optional[Signal]:
@@ -197,7 +196,6 @@ class SignalParser:
             message_id=message_id,
             author=author,
             symbol=symbol,
-            expiration_minutes=config.EXPIRATION_TIMES["DEFAULT"]
         )
     
     def parse(self, text: str, author: str, message_id: int) -> Optional[Signal]:
@@ -245,7 +243,6 @@ class SignalParser:
                             message_id=message_id,
                             author=author,
                             symbol=ai_result["symbol"],
-                            expiration_minutes=config.EXPIRATION_TIMES["ICM"]
                         )
                 else:
                     logger.warning(f"parse: AI parser also failed for ICM signal {message_id}")
@@ -271,7 +268,6 @@ class SignalParser:
                             message_id=message_id,
                             author=author,
                             symbol=ai_result["symbol"],
-                            expiration_minutes=config.EXPIRATION_TIMES["FORTUNE"]
                         )
                         
                         # Log Fortune signal

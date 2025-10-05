@@ -105,12 +105,6 @@ BE_OFFSET = 0  # Points to add to entry for break-even (0 = exact entry)
 BE_SL_DISTANCE_PERCENTAGE = 0.01316  # Percentage of entry price for SL distance threshold (0.01316%)
 MARKET_ORDER_TOLERANCE_FACTOR = 0.00019444  # Tolerance = price * factor (e.g., 3600 * 0.00019444 = 0.7)
 
-EXPIRATION_TIMES = {
-    "DEFAULT": 720,    # 5 minutes for default authors (like RDL)
-    "ICM": 720,        # 5 minutes for ICM
-    "FORTUNE": 720,  # 12 hours (720 minutes) for Fortune
-}
-
 # Logging Configuration
 LOG_LEVEL = "INFO"  # DEBUG, INFO, WARNING, ERROR
 LOG_FILE = "trading_copier.log"

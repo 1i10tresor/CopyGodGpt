@@ -22,7 +22,7 @@ Le robot surveille en permanence vos positions ouvertes. Dès que le prix attein
 Le robot vous offre un contrôle total sur vos positions directement depuis Telegram. Vous pouvez répondre à n'importe quel signal avec des commandes simples : "Cloturez now" ferme immédiatement toutes les positions liées à ce signal, "breakeven" force le déplacement du stop loss au point d'entrée, et "prendre tp1 now" ferme uniquement la position du premier take profit. Cette interactivité vous permet de réagir rapidement aux conditions de marché changeantes.
 
 **Gestion intelligente des expirations**
-Tous les ordres en attente sont automatiquement configurés avec des temps d'expiration appropriés. Les ordres ICM et standards expirent après 12 minutes, tandis que les signaux Fortune suivent leur propre temporisation. Le robot calcule automatiquement le décalage horaire entre votre système et le serveur MetaTrader 5 pour garantir une synchronisation parfaite des expirations.
+Les ordres en attente sont configurés sans expiration, permettant une flexibilité maximale dans l'exécution des signaux selon les conditions de marché.
 
 **Sécurité et fiabilité**
 Le robot intègre de nombreuses protections : vérification de la validité des prix, annulation automatique des ordres si le stop loss est déjà atteint, gestion complète des erreurs avec logs détaillés, et compatibilité avec tous les brokers MetaTrader 5. Chaque action est tracée et documentée pour un suivi transparent de toutes les opérations.
