@@ -2,53 +2,32 @@
 
 Robot de trading automatisé qui copie les signaux Telegram vers MetaTrader 5 en temps réel.
 
-## 🚀 Fonctionnement du Robot
+## Comment fonctionne le robot ?
 
-### 📱 Écoute des Signaux Telegram
-Le robot surveille en permanence vos canaux Telegram configurés et détecte automatiquement :
-- **Signaux ICM** : Format spécialisé avec TPs fixes (+2, +5, +8, +200)
-- **Signaux Fortune** : Multi-symboles avec TPs variables + "open"
-- **Signaux par défaut** : Format standard avec TPs calculés (+2, +4, +6, "open")
+Ce robot de trading automatisé transforme votre expérience de trading en copiant instantanément les signaux de vos canaux Telegram préférés directement sur votre compte MetaTrader 5. Voici exactement ce qui se passe lorsque vous l'activez :
 
-### 🎯 Placement Intelligent des Ordres
-Le robot analyse le prix actuel vs le prix d'entrée du signal :
-- **Ordre au marché** : Si le prix est proche de l'entrée (tolérance de 0.7 points)
-- **Ordre limite** : Si le prix est éloigné de l'entrée
-- **Annulation automatique** : Si le prix a dépassé le stop loss
+**Surveillance continue de vos canaux Telegram**
+Dès que le robot est lancé, il se connecte à vos canaux Telegram configurés et reste en écoute permanente. Il analyse chaque message entrant pour détecter automatiquement les signaux de trading valides. Le robot reconnaît différents formats de signaux : ceux d'ICM avec leurs take profits fixes, les signaux Fortune qui couvrent plusieurs symboles, et les signaux standards avec leurs configurations personnalisées.
 
-### 📊 Gestion Multi-TP
-Pour chaque signal, le robot place **un ordre séparé pour chaque Take Profit** :
-- TP1, TP2, TP3 : Ordres avec prix fixes
-- TP4 "open" : Ordre sans TP (profit illimité)
-- **Commentaire unique** : Chaque ordre contient l'ID du signal + valeur TP1
+**Analyse intelligente et placement d'ordres**
+Lorsqu'un signal valide est détecté, le robot effectue immédiatement une analyse du marché. Il compare le prix d'entrée du signal avec le prix actuel du marché pour déterminer la meilleure stratégie d'exécution. Si le prix actuel est proche du prix d'entrée (dans une tolérance de 0.7 points), le robot place un ordre au marché pour une exécution immédiate. Si le prix est éloigné, il place un ordre limite au prix d'entrée spécifié. Cette logique garantit que vous ne manquez jamais une opportunité tout en respectant les paramètres du signal.
 
-### ⚡ Break-Even Automatique
-Le robot surveille vos positions en continu :
-- **Détection TP1** : Quand le prix atteint le premier Take Profit
-- **Modification SL** : Déplace automatiquement le Stop Loss au point d'entrée
-- **Protection garantie** : Aucune perte possible une fois TP1 atteint
+**Gestion multi-positions pour maximiser les profits**
+Pour chaque signal reçu, le robot ne place pas un seul ordre, mais crée une position séparée pour chaque take profit mentionné dans le signal. Par exemple, si un signal contient 4 take profits, vous aurez 4 positions distinctes, chacune avec son propre objectif de profit. Cette approche vous permet de sécuriser des gains progressifs : vous pouvez prendre des bénéfices au premier TP tout en laissant les autres positions courir vers des profits plus importants. Chaque position est étiquetée avec un commentaire unique contenant l'ID du signal original, permettant un suivi parfait.
 
-### 🎮 Commandes de Gestion Interactive
-Répondez directement aux signaux Telegram pour contrôler vos ordres :
-- **"Cloturez now"** → Ferme tous les ordres du signal
-- **"breakeven"** → Force le break-even sur toutes les positions
-- **"prendre tp1 now"** → Ferme uniquement la position TP1
+**Protection automatique avec le break-even**
+Le robot surveille en permanence vos positions ouvertes. Dès que le prix atteint votre premier take profit (TP1), il modifie automatiquement le stop loss de toutes vos positions liées à ce signal pour le placer au point d'entrée. Cette fonctionnalité révolutionnaire garantit que vous ne perdrez jamais d'argent une fois que le marché a bougé en votre faveur. Vos profits sont sécurisés automatiquement sans aucune intervention de votre part.
 
-### 🔄 Expiration Intelligente
-Les ordres en attente expirent automatiquement :
-- **ICM & Défaut** : 12 minutes (720 secondes)
-- **Fortune** : 12 minutes (720 secondes)
-- **Synchronisation serveur** : Calcul automatique du décalage horaire MT5
+**Contrôle interactif via Telegram**
+Le robot vous offre un contrôle total sur vos positions directement depuis Telegram. Vous pouvez répondre à n'importe quel signal avec des commandes simples : "Cloturez now" ferme immédiatement toutes les positions liées à ce signal, "breakeven" force le déplacement du stop loss au point d'entrée, et "prendre tp1 now" ferme uniquement la position du premier take profit. Cette interactivité vous permet de réagir rapidement aux conditions de marché changeantes.
 
-## ✨ Avantages Clés
+**Gestion intelligente des expirations**
+Tous les ordres en attente sont automatiquement configurés avec des temps d'expiration appropriés. Les ordres ICM et standards expirent après 12 minutes, tandis que les signaux Fortune suivent leur propre temporisation. Le robot calcule automatiquement le décalage horaire entre votre système et le serveur MetaTrader 5 pour garantir une synchronisation parfaite des expirations.
 
-- ✅ Automatic signal detection from Telegram channels
-- ✅ **Réaction instantanée** : Ordres placés en moins de 2 secondes
-- ✅ **Gestion du risque** : Break-even automatique + expiration des ordres
-- ✅ **Multi-symboles** : XAUUSD, EURUSD, indices, matières premières...
-- ✅ **Contrôle total** : Commandes interactives via Telegram
-- ✅ **Fiabilité** : Gestion d'erreurs complète + logs détaillés
-- ✅ **Compatibilité** : Fonctionne avec tous les brokers MT5
+**Sécurité et fiabilité**
+Le robot intègre de nombreuses protections : vérification de la validité des prix, annulation automatique des ordres si le stop loss est déjà atteint, gestion complète des erreurs avec logs détaillés, et compatibilité avec tous les brokers MetaTrader 5. Chaque action est tracée et documentée pour un suivi transparent de toutes les opérations.
+
+En résumé, ce robot transforme votre trading en automatisant complètement le processus de copie des signaux tout en vous laissant le contrôle final sur vos positions. Il combine la rapidité d'exécution automatique avec la flexibilité du contrôle manuel, vous offrant le meilleur des deux mondes pour optimiser vos performances de trading.
 
 ## Installation
 
