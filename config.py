@@ -45,6 +45,9 @@ SYMBOL_MAPPING = {
             "xagusd": "XAGUSD+",
             "silver": "XAGUSD+",
             "nas100": "NAS100",
+            "nas 100": "NAS100",
+            "NAS 100": "NAS100",
+            "NAS100": "NAS100",
             "us100": "NAS100",
             "us30": "DJ30",
             "dj30": "DJ30",
@@ -59,6 +62,8 @@ SYMBOL_MAPPING = {
             "btc": "BTCUSD",
             "BTC": "BTCUSD",
             "bitcoin": "BTCUSD",
+            "SP500": "SP500",
+            "US500": "SP500",
         },
     },
 }
