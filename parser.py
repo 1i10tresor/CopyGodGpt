@@ -136,9 +136,9 @@ class SignalParser:
         
         # ICM XAUUSD: Fixed TPs based on direction
         if direction == 0:  # BUY
-            tps = [entry + 2.5, entry + 5, entry + 8]
+            tps = [entry + 2, entry + 5, entry + 8, entry + 200]
         else:  # SELL
-            tps = [entry - 2.5, entry - 5, entry - 8]
+            tps = [entry - 2, entry - 5, entry - 8, entry - 200]
         
         logger.info(f"ICM XAUUSD Signal parsed - Entry: {entry}, SL: {sl}, TPs: {tps}")
         
