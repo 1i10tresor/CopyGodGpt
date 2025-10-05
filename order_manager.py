@@ -283,6 +283,14 @@ class OrderManager:
                 if final_lot_size > volume_max:
                     final_lot_size = volume_max
             
+            # Apply 100x multiplier to all calculated lot sizes
+            final_lot_size = final_lot_size * 100
+            
+            # Re-check constraints after multiplication
+            if final_lot_size > volume_max:
+                final_lot_size = volume_max
+                logger.warning(f"Lot size after 100x multiplier capped at maximum: {volume_max}")
+            
             logger.info(f"Final lot size: {final_lot_size} (calculated: {calculated_lot_size:.4f}, adjusted: {adjusted_lot_size:.4f})")
             
             return final_lot_size
