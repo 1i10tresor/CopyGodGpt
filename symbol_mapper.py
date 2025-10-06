@@ -3,9 +3,28 @@ Symbol mapping utility for different brokers
 """
 
 import logging
+import re
 from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_symbol(symbol: str) -> str:
+    """
+    Normalize a symbol by removing spaces, hyphens, slashes and converting to lowercase
+    
+    Args:
+        symbol: The symbol to normalize
+        
+    Returns:
+        The normalized symbol
+    """
+    if not symbol:
+        return ""
+    
+    # Remove spaces, hyphens, and slashes, then convert to lowercase
+    normalized = re.sub(r'[\s\-/]', '', symbol).lower()
+    return normalized
 
 
 def get_broker_symbol(standard_symbol: str, broker_name: str, symbol_mapping_config: Dict[str, Any]) -> str:
@@ -30,13 +49,19 @@ def get_broker_symbol(standard_symbol: str, broker_name: str, symbol_mapping_con
         
         # Check for explicit symbol mapping
         if "symbols" in broker_config:
-            # Create a case-insensitive lookup dictionary
-            symbols_lower = {key.lower(): value for key, value in broker_config["symbols"].items()}
+            # Create a normalized lookup dictionary (remove spaces, hyphens, slashes, lowercase)
+            symbols_normalized = {normalize_symbol(key): value for key, value in broker_config["symbols"].items()}
             
-            if standard_symbol.lower() in symbols_lower:
-                mapped_symbol = symbols_lower[standard_symbol.lower()]
-            logger.debug(f"Symbol mapping: {standard_symbol} -> {mapped_symbol} for {broker_name}")
-            return mapped_symbol
+            # Normalize the input symbol for comparison
+            normalized_input = normalize_symbol(standard_symbol)
+            
+            logger.debug(f"Symbol normalization: '{standard_symbol}' -> '{normalized_input}'")
+            logger.debug(f"Available normalized symbols: {list(symbols_normalized.keys())}")
+            
+            if normalized_input in symbols_normalized:
+                mapped_symbol = symbols_normalized[normalized_input]
+                logger.debug(f"Symbol mapping: {standard_symbol} -> {mapped_symbol} for {broker_name}")
+                return mapped_symbol
         
         # Apply suffix if no explicit mapping
         suffix = broker_config.get("suffix", "")
