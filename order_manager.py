@@ -93,6 +93,37 @@ class OrderManager:
         
         logger.info(f"Current market price for {broker_symbol}: {current_price}")
         
+        # Security check 1: Entry price deviation from market price
+        entry_deviation = abs(signal.entry - current_price) / current_price * 100
+        if entry_deviation > config.ENTRY_PRICE_MAX_DEVIATION_PERCENTAGE:
+            logger.warning(f"Signal {signal.message_id} ignored - Entry price deviation too high: "
+                         f"{entry_deviation:.2f}% (max: {config.ENTRY_PRICE_MAX_DEVIATION_PERCENTAGE}%) - "
+                         f"Entry: {signal.entry}, Market: {current_price}")
+            return []
+        
+        # Security check 2: TP/SL deviation from entry price
+        # Check SL deviation
+        if isinstance(signal.sl, (int, float)):
+            sl_deviation = abs(signal.sl - signal.entry) / signal.entry * 100
+            if sl_deviation > config.TP_SL_MAX_DEVIATION_PERCENTAGE:
+                logger.warning(f"Signal {signal.message_id} ignored - SL deviation too high: "
+                             f"{sl_deviation:.2f}% (max: {config.TP_SL_MAX_DEVIATION_PERCENTAGE}%) - "
+                             f"Entry: {signal.entry}, SL: {signal.sl}")
+                return []
+        
+        # Check TP deviations
+        for i, tp in enumerate(signal.tps, 1):
+            if tp != "open" and isinstance(tp, (int, float)):
+                tp_deviation = abs(tp - signal.entry) / signal.entry * 100
+                if tp_deviation > config.TP_SL_MAX_DEVIATION_PERCENTAGE:
+                    logger.warning(f"Signal {signal.message_id} ignored - TP{i} deviation too high: "
+                                 f"{tp_deviation:.2f}% (max: {config.TP_SL_MAX_DEVIATION_PERCENTAGE}%) - "
+                                 f"Entry: {signal.entry}, TP{i}: {tp}")
+                    return []
+        
+        logger.debug(f"Signal {signal.message_id} passed security checks - "
+                    f"Entry deviation: {entry_deviation:.2f}%")
+        
         # Determine order type and price
         order_type, price = self.determine_order_type_and_price(signal, current_price)
         if order_type is None:

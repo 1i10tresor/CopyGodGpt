@@ -89,6 +89,10 @@ SYMBOLS_MIN_LOT_0_1 = ["DJ30", "NAS100", "SP500"]
 MIN_PRICE = 3500  # Minimum valid entry price
 MAX_PRICE = 4100  # Maximum valid entry price
 
+# Price Deviation Security
+ENTRY_PRICE_MAX_DEVIATION_PERCENTAGE = 2.5  # Maximum deviation between entry price and market price (%)
+TP_SL_MAX_DEVIATION_PERCENTAGE = 10.0  # Maximum deviation between TP/SL and entry price (%)
+
 # Break Even Configuration
 BE_CHECK_INTERVAL = 0.2  # Interval in seconds for break-even checks
 BE_OFFSET = 0  # Points to add to entry for break-even (0 = exact entry)
