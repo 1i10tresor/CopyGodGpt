@@ -281,16 +281,7 @@ class OrderManager:
             calculated_lot_size = risk_per_order / (sl_points * value_per_point_per_lot)
             logger.debug(f"Calculated lot size: {calculated_lot_size}")
             
-            # Apply 100x multiplier to calculated lot size
-            calculated_lot_size = calculated_lot_size * 100
-            logger.debug(f"Calculated lot size after 100x multiplier: {calculated_lot_size}")
-            
-            # Apply 10x multiplier for specific symbols
-            if broker_symbol in config.SYMBOLS_LOT_MULTIPLIER_10:
-                calculated_lot_size = calculated_lot_size * 10
-                logger.debug(f"Calculated lot size after 10x multiplier for {broker_symbol}: {calculated_lot_size}")
-            
-            # Double lot size for Fortune signals (applied at the end)
+            # Double lot size for Fortune signals only
             if hasattr(signal, 'author') and signal.author and 'fortune' in signal.author.lower():
                 calculated_lot_size = calculated_lot_size * 2
                 logger.debug(f"Calculated lot size after Fortune doubling: {calculated_lot_size}")
@@ -329,7 +320,7 @@ class OrderManager:
                 if final_lot_size > volume_max:
                     final_lot_size = volume_max
             
-            logger.info(f"Final lot size: {final_lot_size} (calculated: {calculated_lot_size:.4f}, adjusted: {adjusted_lot_size:.4f})")
+            logger.info(f"Final lot size: {final_lot_size} (calculated: {calculated_lot_size:.6f}, adjusted: {adjusted_lot_size:.6f})")
             
             return final_lot_size
             
