@@ -84,6 +84,7 @@ MAX_SLIPPAGE = 0  # Maximum slippage in points
 # Risk Management Configuration
 RISK_PERCENTAGE = 0.1  # Risk percentage per signal (0.1% = 0.1)
 SYMBOLS_MIN_LOT_0_1 = ["DJ30", "NAS100", "SP500"]
+SYMBOLS_LOT_MULTIPLIER_10 = ["BTCUSD", "ETHUSD"]  # Symbols that need lot size multiplied by 10
 
 # Price Validation
 MIN_PRICE = 3500  # Minimum valid entry price
