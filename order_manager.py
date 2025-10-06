@@ -284,15 +284,15 @@ class OrderManager:
             calculated_lot_size = calculated_lot_size * 100
             logger.debug(f"Calculated lot size after 100x multiplier: {calculated_lot_size}")
             
-            # Double lot size for Fortune signals
-            if hasattr(signal, 'author') and signal.author and 'fortune' in signal.author.lower():
-                calculated_lot_size = calculated_lot_size * 2
-                logger.debug(f"Calculated lot size after Fortune doubling: {calculated_lot_size}")
-            
             # Apply 10x multiplier for specific symbols
             if broker_symbol in config.SYMBOLS_LOT_MULTIPLIER_10:
                 calculated_lot_size = calculated_lot_size * 10
                 logger.debug(f"Calculated lot size after 10x multiplier for {broker_symbol}: {calculated_lot_size}")
+            
+            # Double lot size for Fortune signals (applied at the end)
+            if hasattr(signal, 'author') and signal.author and 'fortune' in signal.author.lower():
+                calculated_lot_size = calculated_lot_size * 2
+                logger.debug(f"Calculated lot size after Fortune doubling: {calculated_lot_size}")
             
             # Determine minimum lot size based on symbol
             if broker_symbol in config.SYMBOLS_MIN_LOT_0_1:
