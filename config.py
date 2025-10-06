@@ -8,7 +8,7 @@ ACCOUNT = {
     "password": "J&P2n8y%",
     "server": "VantageInternational-Demo",
     "broker_name": "VantageDemo",
-    "mt5_path": r"C:\Program Files\MetaTrader 5 - master\\terminal64.exe"
+    "mt5_path": r"C:\Program Files\metaMaster\\terminal64.exe"
 }
 
 # Symbol Mapping Configuration
@@ -87,7 +87,7 @@ SYMBOLS_MIN_LOT_0_1 = ["DJ30", "NAS100", "SP500"]
 
 # Price Validation
 MIN_PRICE = 3500  # Minimum valid entry price
-MAX_PRICE = 4100  # Maximum valid entry price
+MAX_PRICE = 3900  # Maximum valid entry price
 
 # Price Deviation Security
 ENTRY_PRICE_MAX_DEVIATION_PERCENTAGE = 2.5  # Maximum deviation between entry price and market price (%)
@@ -140,4 +140,7 @@ TRADED_SYMBOLS = [
     "US30",   # Dow Jones 30
     "US100",  # Nasdaq 100
     "US500",  # S&P 500
+
+    # ---- CRYPTO ----
+    "BTCUSD",
 ]
