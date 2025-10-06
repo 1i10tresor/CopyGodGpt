@@ -49,11 +49,13 @@ class AISignalParser:
         
         5. Pour le STOP LOSS :
            - Extraire la valeur du SL telle qu'elle est donnée
+           - IMPORTANT: La valeur du SL doit TOUJOURS être un nombre positif (ignorer tout signe négatif)
            - Si partielle (ex: "sl 70"), il faut partir du principe que c'est les dizaines, et il faut donc reconstruire le SL avec le nombre le plus proche du prix d'entrée. Ainsi ici le nombre le plus proche avec 70 si 3279 est l'entrée est 3270
            - Si complète (ex: "sl 3270.5"), la retourner telle quelle
         
         6. Pour les TAKE PROFITS :
            - Extraire TOUS les TPs mentionnés dans l'ordre
+           - IMPORTANT: Les valeurs des TPs doivent TOUJOURS être des nombres positifs (ignorer tout signe négatif)
            - Si un TP est "open", le retourner comme string "open"
            - Sinon retourner comme valeur numérique
            - Si partiels (ex: "tp1 88", "tp2 04"), les reconstruire de la même manière que le SL vis à vis du point d'entrée. Donc si point entrée est 3279, le nombre le plus proche avec 88 est 3288
