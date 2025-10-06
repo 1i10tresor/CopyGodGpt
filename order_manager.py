@@ -269,7 +269,8 @@ class OrderManager:
                 logger.error(f"Invalid trade_tick_size (0) for {broker_symbol}")
                 return None
             
-            value_per_point_per_lot = symbol_props['trade_tick_value'] / symbol_props['trade_tick_size']
+            # Value per point per lot = trade_tick_value (already represents value per point for 1 lot)
+            value_per_point_per_lot = symbol_props['trade_tick_value']
             logger.debug(f"Value per point per lot: {value_per_point_per_lot}")
             
             # Calculate theoretical lot size
