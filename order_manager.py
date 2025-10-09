@@ -460,7 +460,7 @@ class OrderManager:
             logger.info(f"Found {len(target_positions)} positions for message ID {original_message_id}")
             
             # Execute specific actions based on command
-            if command_text_lower in ["cloturez now", "clôtuez now"]:
+            if command_text_lower in ["cloturez now", "clôturez now"]:
                 self._close_positions(target_positions)
             elif command_text_lower in ["breakeven", "be", "b.e"]:
                 self._apply_breakeven_to_positions(target_positions)
