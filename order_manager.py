@@ -144,16 +144,32 @@ class OrderManager:
         
         placed_tickets = []
         
-        # Get TP1 value for comment (first non-"open" TP)
-        tp1_value = None
-        for tp in signal.tps:
-            if tp != "open":
-                tp1_value = tp
-                break
+        # Get break-even trigger price for comment
+        # For ICM signals: use TP2 (second non-"open" TP)
+        # For other signals: use TP1 (first non-"open" TP)
+        be_trigger_price = None
+        
+        if hasattr(signal, 'author') and signal.author and 'icm' in signal.author.lower():
+            # For ICM: find second non-"open" TP
+            non_open_tps = [tp for tp in signal.tps if tp != "open" and isinstance(tp, (int, float))]
+            if len(non_open_tps) >= 2:
+                be_trigger_price = non_open_tps[1]  # Second TP (TP2)
+                logger.debug(f"ICM signal: Using TP2 ({be_trigger_price}) as break-even trigger")
+            elif len(non_open_tps) >= 1:
+                be_trigger_price = non_open_tps[0]  # Fallback to TP1 if no TP2
+                logger.warning(f"ICM signal: Only one TP found, using TP1 ({be_trigger_price}) as break-even trigger")
+        else:
+            # For non-ICM: find first non-"open" TP
+            for tp in signal.tps:
+                if tp != "open" and isinstance(tp, (int, float)):
+                    be_trigger_price = tp
+                    break
+            logger.debug(f"Non-ICM signal: Using TP1 ({be_trigger_price}) as break-even trigger")
         
         # Fallback if no valid TP found
-        if tp1_value is None:
-            tp1_value = signal.entry + 2 if signal.direction == 0 else signal.entry - 2
+        if be_trigger_price is None:
+            be_trigger_price = signal.entry + 2 if signal.direction == 0 else signal.entry - 2
+            logger.warning(f"No valid TP found for break-even trigger, using fallback: {be_trigger_price}")
         
         # Place an order for each TP
         for i, tp in enumerate(signal.tps, 1):
@@ -165,8 +181,8 @@ class OrderManager:
             # Round TP to symbol precision
             rounded_tp = round(tp, digits)
             
-            # Format comment: MessageID/TP1_value (shortened for 16 char limit)
-            comment = f"{signal.message_id}/{tp1_value}"
+            # Format comment: MessageID/BE_trigger_price (shortened for 16 char limit)
+            comment = f"{signal.message_id}/{be_trigger_price}"
             
             # Prepare order request
             request = {
