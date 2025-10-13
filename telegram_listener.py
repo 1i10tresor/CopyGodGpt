@@ -105,7 +105,7 @@ class TelegramListener:
                 # Check for modification commands first
                 text_lower = text.lower().strip()
                 modification_commands = [
-                    "cloturez now", "clôtuez now", "breakeven", "be", "b.e", "prendre tp1 now"
+                    "cloturez now", "clôtuez now", "breakeven", "be", "b.e", "prendre tp1 now", "move sl"
                 ]
                 
                 is_modification_command = any(cmd in text_lower for cmd in modification_commands)

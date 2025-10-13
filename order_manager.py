@@ -477,6 +477,8 @@ class OrderManager:
                 self._apply_breakeven_to_positions(target_positions)
             elif command_text_lower == "prendre tp1 now":
                 self._close_tp1_position(target_positions)
+            elif command_text_lower.startswith("move sl "):
+                self._move_sl_to_price(target_positions, command_text)
             else:
                 logger.warning(f"Unrecognized modification command: '{command_text}'")
                 
@@ -589,3 +591,39 @@ class OrderManager:
                 logger.error(f"Error processing position {position.ticket} for TP1 close: {e}")
         
         logger.warning("No TP1 position found to close")
+    
+    def _move_sl_to_price(self, positions: List[Any], command_text: str):
+        """Move Stop Loss to specified price for all positions"""
+        try:
+            # Extract price from command (format: "move sl 3650.5")
+            parts = command_text.lower().split()
+            if len(parts) < 3:
+                logger.error(f"Invalid move sl command format: '{command_text}'. Expected: 'move sl XXXX'")
+                return
+            
+            try:
+                new_sl_price = float(parts[2])
+            except ValueError:
+                logger.error(f"Invalid price in move sl command: '{parts[2]}'. Must be a number.")
+                return
+            
+            logger.info(f"Moving SL to {new_sl_price} for {len(positions)} positions")
+            
+            for position in positions:
+                try:
+                    success = self.mt5.modify_sl_for_position(
+                        ticket=position.ticket,
+                        new_sl=new_sl_price,
+                        current_tp=position.tp
+                    )
+                    
+                    if success:
+                        logger.info(f"✅ SL moved to {new_sl_price} for position {position.ticket}")
+                    else:
+                        logger.error(f"❌ Failed to move SL to {new_sl_price} for position {position.ticket}")
+                        
+                except Exception as e:
+                    logger.error(f"Error moving SL for position {position.ticket}: {e}")
+                    
+        except Exception as e:
+            logger.error(f"Error in _move_sl_to_price: {e}")
