@@ -240,6 +240,10 @@ class SignalParser:
                 logger.debug(f"parse: AI parser result: {ai_result}")
                 if ai_result:
                     logger.debug(f"parse: AI identified symbol as '{ai_result['symbol']}'")
+                    # Determine if "limit" keyword is present in original text for ICM signals
+                    is_limit_allowed_for_ai = "limit" in text.lower()
+                    logger.debug(f"parse: ICM AI signal - is_limit_allowed: {is_limit_allowed_for_ai}")
+                    
                     # Convert AI result to Signal
                     entry = ai_result["entries"][0] if ai_result["entries"] else None
                     if entry:
@@ -251,6 +255,7 @@ class SignalParser:
                             message_id=message_id,
                             author=author,
                             symbol=ai_result["symbol"],
+                            is_limit_allowed=is_limit_allowed_for_ai,
                         )
                 else:
                     logger.warning(f"parse: AI parser also failed for ICM signal {message_id}")
