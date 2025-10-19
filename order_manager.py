@@ -538,31 +538,8 @@ class OrderManager:
         
         for position in positions:
             try:
-                # Parse comment to get signal author and direction for conditional BE offset
-                be_offset = config.BE_OFFSET  # Default offset
-                
-                if position.comment:
-                    parts = position.comment.split('/')
-                    if len(parts) >= 4:
-                        try:
-                            signal_author = parts[2]
-                            signal_direction = int(parts[3])
-                            
-                            # Apply ICM-specific BE offset
-                            if signal_author.upper() == "ICM":
-                                if signal_direction == 0:  # BUY
-                                    be_offset = 3
-                                else:  # SELL
-                                    be_offset = -3
-                                logger.debug(f"Position {position.ticket}: ICM breakeven command - Using BE offset: {be_offset}")
-                            else:
-                                logger.debug(f"Position {position.ticket}: Non-ICM breakeven command - Using default BE offset: {be_offset}")
-                        except (ValueError, IndexError):
-                            logger.warning(f"Position {position.ticket}: Could not parse comment for BE offset, using default")
-                    else:
-                        logger.warning(f"Position {position.ticket}: Comment format incomplete for conditional BE, using default offset")
-                
-                new_sl = position.price_open + be_offset
+                # For manual breakeven command, always move SL to entry price (no offset)
+                new_sl = position.price_open
                 
                 success = self.mt5.modify_sl_for_position(
                     ticket=position.ticket,
@@ -571,7 +548,7 @@ class OrderManager:
                 )
                 
                 if success:
-                    logger.info(f"✅ Breakeven applied to position {position.ticket} - SL moved to {new_sl} (offset: {be_offset})")
+                    logger.info(f"✅ Breakeven applied to position {position.ticket} - SL moved to {new_sl} (entry price)")
                 else:
                     logger.error(f"❌ Failed to apply breakeven to position {position.ticket}")
                     
