@@ -28,11 +28,42 @@ class OrderManager:
         entry = signal.entry
         sl = signal.sl
         direction = signal.direction
+        author = getattr(signal, 'author', '').lower()
+        is_limit_allowed = getattr(signal, 'is_limit_allowed', True)  # Default to True for backward compatibility
         
         # Calculate tolerance based on entry price
         tolerance = entry * config.MARKET_ORDER_TOLERANCE_FACTOR
         
         logger.debug(f"Price analysis - Entry: {entry}, Current: {current_price}, SL: {sl}, Tolerance: {tolerance:.2f}")
+        logger.debug(f"Signal author: {author}, is_limit_allowed: {is_limit_allowed}")
+        
+        # Special logic for ICM signals without "limit" keyword
+        if 'icm' in author and not is_limit_allowed:
+            logger.info(f"ICM signal without 'limit' - market orders only")
+            
+            if direction == 0:  # BUY
+                if current_price <= sl:
+                    logger.info(f"ICM BUY signal cancelled - Current price {current_price} <= SL {sl}")
+                    return None, None
+                elif sl < current_price < entry + tolerance:
+                    logger.info(f"ICM BUY market order - Price {current_price} in market range ({sl}, {entry + tolerance})")
+                    return mt5.ORDER_TYPE_BUY, current_price
+                else:
+                    logger.info(f"ICM BUY signal cancelled - Price {current_price} too far from entry {entry} (no limit orders allowed)")
+                    return None, None
+            
+            else:  # SELL
+                if current_price >= sl:
+                    logger.info(f"ICM SELL signal cancelled - Current price {current_price} >= SL {sl}")
+                    return None, None
+                elif entry - tolerance < current_price < sl:
+                    logger.info(f"ICM SELL market order - Price {current_price} in market range ({entry - tolerance}, {sl})")
+                    return mt5.ORDER_TYPE_SELL, current_price
+                else:
+                    logger.info(f"ICM SELL signal cancelled - Price {current_price} too far from entry {entry} (no limit orders allowed)")
+                    return None, None
+        
+        # Default logic for all other cases (ICM with "limit" or non-ICM signals)
         
         if direction == 0:  # BUY
             if current_price <= sl:

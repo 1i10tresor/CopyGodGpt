@@ -15,6 +15,7 @@ class Signal:
     message_id: int
     author: str
     symbol: str = "XAUUSD"  # Default to XAUUSD
+    is_limit_allowed: bool = False  # True if signal contains "limit" keyword
     
     def __str__(self):
         direction_str = "BUY" if self.direction == 0 else "SELL"

@@ -142,6 +142,13 @@ class SignalParser:
         
         logger.info(f"ICM XAUUSD Signal parsed - Entry: {entry}, SL: {sl}, TPs: {tps}")
         
+        # Check if signal contains "limit" keyword
+        is_limit_allowed = "limit" in text.lower()
+        if is_limit_allowed:
+            logger.debug(f"ICM signal {message_id} contains 'limit' keyword - limit orders allowed")
+        else:
+            logger.debug(f"ICM signal {message_id} does not contain 'limit' keyword - market orders only")
+        
         return Signal(
             direction=direction,
             entry=entry,
@@ -150,6 +157,7 @@ class SignalParser:
             message_id=message_id,
             author="ICM",
             symbol=symbol,
+            is_limit_allowed=is_limit_allowed,
         )
     
     def parse_default_signal(self, text: str, message_id: int, author: str) -> Optional[Signal]:
