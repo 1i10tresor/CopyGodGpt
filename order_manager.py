@@ -180,21 +180,21 @@ class OrderManager:
         # For other signals: use TP1 (first non-"open" TP)
         be_trigger_price = None
         
-        if hasattr(signal, 'author') and signal.author and 'icm' in signal.author.lower():
+        if hasattr(signal, 'author') and signal.author and 'icm' in signal.author.lower() and signal.symbol == "XAUUSD":
             # For ICM: BE trigger at entry +/-3
             if signal.direction == 0:  # BUY
                 be_trigger_price = signal.entry + 3
-                logger.debug(f"ICM BUY signal: BE trigger at entry + 3 = {be_trigger_price}")
+                logger.debug(f"ICM XAUUSD BUY signal: BE trigger at entry + 3 = {be_trigger_price}")
             else:  # SELL
                 be_trigger_price = signal.entry - 3
-                logger.debug(f"ICM SELL signal: BE trigger at entry - 3 = {be_trigger_price}")
+                logger.debug(f"ICM XAUUSD SELL signal: BE trigger at entry - 3 = {be_trigger_price}")
         else:
-            # For non-ICM: find first non-"open" TP as BE trigger
+            # For non-ICM or ICM non-XAUUSD: find first non-"open" TP as BE trigger
             for tp in signal.tps:
                 if tp != "open" and isinstance(tp, (int, float)):
                     be_trigger_price = tp
                     break
-            logger.debug(f"Non-ICM signal: Using TP1 ({be_trigger_price}) as BE trigger")
+            logger.debug(f"Non-ICM or ICM non-XAUUSD signal: Using TP1 ({be_trigger_price}) as BE trigger")
         
         # Fallback if no valid TP found
         if be_trigger_price is None:
