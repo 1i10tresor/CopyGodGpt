@@ -124,6 +124,16 @@ class OrderManager:
         
         logger.info(f"Current market price for {broker_symbol}: {current_price}")
         
+        # Get detailed tick information for price validation
+        tick_info = mt5.symbol_info_tick(broker_symbol)
+        if tick_info is None:
+            logger.error(f"Could not get tick info for {broker_symbol}")
+            return []
+        
+        current_ask = tick_info.ask
+        current_bid = tick_info.bid
+        logger.debug(f"Current prices - Ask: {current_ask}, Bid: {current_bid}")
+        
         # Security check 1: Entry price deviation from market price
         entry_deviation = abs(signal.entry - current_price) / current_price * 100
         if entry_deviation > config.ENTRY_PRICE_MAX_DEVIATION_PERCENTAGE:
@@ -160,6 +170,36 @@ class OrderManager:
         if order_type is None:
             logger.warning(f"Signal {signal.message_id} cancelled or invalid")
             return []
+        
+        # Validate price for pending orders (limit orders)
+        if order_type in [mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT]:
+            # Get symbol's minimum distance requirements
+            trade_stops_level = symbol_info.trade_stops_level
+            point = symbol_info.point
+            min_distance_value = trade_stops_level * point
+            
+            logger.debug(f"Symbol {broker_symbol} - Trade stops level: {trade_stops_level}, Point: {point}, Min distance: {min_distance_value}")
+            
+            # Validate distance for limit orders
+            if order_type == mt5.ORDER_TYPE_BUY_LIMIT:
+                # Buy limit must be below current bid by at least min_distance_value
+                required_max_price = current_bid - min_distance_value
+                if price >= required_max_price:
+                    logger.warning(f"BUY_LIMIT order cancelled - Price {price} too close to market. "
+                                 f"Required: < {required_max_price} (Bid: {current_bid}, Min distance: {min_distance_value})")
+                    return []
+                else:
+                    logger.debug(f"BUY_LIMIT price {price} valid (< {required_max_price})")
+            
+            elif order_type == mt5.ORDER_TYPE_SELL_LIMIT:
+                # Sell limit must be above current ask by at least min_distance_value
+                required_min_price = current_ask + min_distance_value
+                if price <= required_min_price:
+                    logger.warning(f"SELL_LIMIT order cancelled - Price {price} too close to market. "
+                                 f"Required: > {required_min_price} (Ask: {current_ask}, Min distance: {min_distance_value})")
+                    return []
+                else:
+                    logger.debug(f"SELL_LIMIT price {price} valid (> {required_min_price})")
         
         # Get symbol precision for rounding
         digits = symbol_info.digits
