@@ -2,6 +2,7 @@
 """Telegram connection and message listening"""
 
 import logging
+import re
 from telethon import TelegramClient, events
 from telethon.tl.types import User, Channel, Chat
 from parser import SignalParser
@@ -104,11 +105,17 @@ class TelegramListener:
                 
                 # Check for modification commands first
                 text_lower = text.lower().strip()
-                modification_commands = [
-                    "cloturez now", "clôtuez now", "breakeven", "be", "b.e", "prendre tp1 now", "move sl"
+                modification_commands_patterns = [
+                    r'\bcloturez now\b',
+                    r'\bclôturez now\b',
+                    r'\bbreakeven\b',
+                    r'\bbe\b',
+                    r'\bb\.e\b',
+                    r'\bprendre tp1 now\b',
+                    r'\bmove sl\b'
                 ]
                 
-                is_modification_command = any(cmd in text_lower for cmd in modification_commands)
+                is_modification_command = any(re.search(pattern, text_lower) for pattern in modification_commands_patterns)
                 
                 if is_modification_command:
                     # Check if this is a reply to another message
